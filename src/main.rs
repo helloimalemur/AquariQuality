@@ -11,6 +11,8 @@ async fn greet(name: web::Path<String>) -> impl Responder {
 async fn main() -> std::io::Result<()> {
     HttpServer::new(|| {
         App::new()
+            // .service(root)
+            // .service()
             .default_service(web::to(default_handler))
             .service(greet)
     })
