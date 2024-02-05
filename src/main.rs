@@ -1,8 +1,13 @@
+mod middleware;
+use middleware::*;
+
 use actix_web::{get, web, App, HttpServer, Responder, Either, HttpResponse, Error};
 use actix_web::http::{Method, StatusCode};
 use actix_files::{Files, NamedFile};
+use actix_web::dev::Service;
+use actix_web::web::service;
 
-#[get("/hello/{name}")]
+// #[get("/hello/{name}")]
 async fn greet(name: web::Path<String>) -> impl Responder {
     format!("Hello {name}!\n")
 }
@@ -11,10 +16,11 @@ async fn greet(name: web::Path<String>) -> impl Responder {
 async fn main() -> std::io::Result<()> {
     HttpServer::new(|| {
         App::new()
+            // .wrap(middleware::api_key::ApiKeyMiddlware)
             // .service(root)
             // .service()
             .default_service(web::to(default_handler))
-            .service(greet)
+            .service(web::resource("/hello/{name}").to(greet))
     })
         .bind(("127.0.0.1", 8080))?
         .run()
