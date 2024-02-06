@@ -66,6 +66,11 @@ impl<S, B> Service<ServiceRequest> for ApiKeyMiddlware<S>
         // verify API key
         println!("{:#?}", req.headers());
 
+        if let hvalue = Some(req.headers().get("x-test-header")) {
+            println!("Value: {}", hvalue.unwrap().unwrap().to_str().unwrap().to_string());
+        }
+
+
 
 
         let fut = self.service.call(req);
