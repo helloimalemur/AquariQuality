@@ -19,6 +19,7 @@ impl ApiKey {
     pub fn new(api_key: String) -> Self {
         ApiKey {
             api_key: Rc::new(api_key),
+
         }
     }
 }
@@ -61,6 +62,11 @@ impl<S, B> Service<ServiceRequest> for ApiKeyMiddlware<S>
 
     fn call(&self, req: ServiceRequest) -> Self::Future {
         println!("Hi from start. You requested: {}", req.path());
+
+        // verify API key
+        println!("{:#?}", req.headers());
+
+
 
         let fut = self.service.call(req);
 
