@@ -17,6 +17,7 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(|| {
         App::new()
             // .wrap(middleware::api_key::ApiKeyMiddlware)
+            .wrap(middleware::api_key::ApiKey::new("asdf".to_string()))
             // .service(root)
             // .service()
             .default_service(web::to(default_handler))

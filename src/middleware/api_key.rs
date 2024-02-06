@@ -1,4 +1,5 @@
 use std::future::{ready, Ready};
+use std::rc::Rc;
 
 use actix_web::{
     dev::{forward_ready, Service, ServiceRequest, ServiceResponse, Transform},
@@ -10,7 +11,17 @@ use futures_util::future::LocalBoxFuture;
 // 1. Middleware initialization, middleware factory gets called with
 //    next service in chain as parameter.
 // 2. Middleware's call method gets called with normal request.
-pub struct ApiKey(String);
+pub struct ApiKey {
+    api_key: Rc<String>
+}
+
+impl ApiKey {
+    pub fn new(api_key: String) -> Self {
+        ApiKey {
+            api_key: Rc::new(api_key),
+        }
+    }
+}
 
 // Middleware factory is `Transform` trait
 // `S` - type of the next service
