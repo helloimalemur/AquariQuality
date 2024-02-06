@@ -1,4 +1,5 @@
 // https://imfeld.dev/writing/actix-web-middleware
+// curl -XGET -H'x-test-header: headervalue' localhost:8080/hello/asdf
 mod middleware;
 use middleware::*;
 
