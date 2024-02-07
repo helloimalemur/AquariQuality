@@ -8,7 +8,7 @@ use std::collections::HashMap;
 use std::path::Path;
 use std::sync::Mutex;
 
-use crate::api_keys::{create_api_key, is_key_valid, load_keys_from_file};
+use crate::api_keys::{create_api_key, delete_api_key, is_key_valid, load_keys_from_file};
 use actix_files::{Files, NamedFile};
 use actix_web::dev::Service;
 use actix_web::http::header::HeaderMap;
@@ -75,6 +75,8 @@ async fn main() -> std::io::Result<()> {
             .wrap(api_key::ApiKey::new("asdf".to_string()))
             .service(web::resource("/api/create").to(create_api_key))
             .service(web::resource("/api/create/").to(create_api_key))
+            .service(web::resource("/api/delete/{key}").to(delete_api_key))
+            .service(web::resource("/api/delete/{key}/").to(delete_api_key))
             .default_service(web::to(default_handler))
             .service(web::resource("/hello/{name}").to(greet))
     })
