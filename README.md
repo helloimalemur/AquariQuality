@@ -1,3 +1,5 @@
+# AquariQuality
+
 ```shell
 ## Bring your own SQL server;
 export DOCKER_MARIADB_DBHOST="127.0.0.1";
