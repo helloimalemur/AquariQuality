@@ -270,6 +270,7 @@ dependencies = [
  "actix-web",
  "config",
  "futures-util",
+ "rand",
  "sqlx",
 ]
 

@@ -8,13 +8,14 @@ use std::collections::HashMap;
 use std::path::Path;
 use std::sync::Mutex;
 
-use crate::api_keys::{is_key_valid, load_keys_from_file};
+use crate::api_keys::{create_api_key, is_key_valid, load_keys_from_file};
 use actix_files::{Files, NamedFile};
 use actix_web::dev::Service;
 use actix_web::http::header::HeaderMap;
 use actix_web::http::{Method, StatusCode};
 use actix_web::web::{service, Data};
 use actix_web::{get, web, App, Either, Error, HttpRequest, HttpResponse, HttpServer, Responder};
+use actix_web::middleware::NormalizePath;
 use config::Config;
 use sqlx::{MySql, MySqlPool, Pool};
 
@@ -32,24 +33,6 @@ async fn greet(
     } else {
         "invalid api key\n".to_string()
     }
-}
-
-#[get("/api/create/")]
-async fn create_api_key(
-    name: web::Path<String>,
-    data: Data<Mutex<AppState>>,
-    req: HttpRequest,
-) -> String {
-    // verify api_key
-    if is_key_valid(req.headers().get("x-api-key").unwrap().to_str().unwrap().to_string(), data.clone().lock().unwrap().api_key.lock().unwrap().to_vec()) {
-        println!("{:#?}", data.clone().lock().unwrap().api_key);
-        println!("{:#?}", data.clone().lock().unwrap().db_pool.lock().unwrap().is_closed());
-        println!("{:#?}", req.headers());
-        let new_key = format!("{name}\n").to_string();
-    } else {
-        "invalid api key\n".to_string();
-    }
-    "ok".to_string()
 }
 
 
@@ -90,7 +73,8 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .app_data(Data::new(Mutex::new(AppState::new(load_keys_from_file(), db_pool.clone()))))
             .wrap(api_key::ApiKey::new("asdf".to_string()))
-            .service(create_api_key)
+            .service(web::resource("/api/create").to(create_api_key))
+            .service(web::resource("/api/create/").to(create_api_key))
             .default_service(web::to(default_handler))
             .service(web::resource("/hello/{name}").to(greet))
     })
