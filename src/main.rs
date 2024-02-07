@@ -26,6 +26,7 @@ async fn greet(
 ) -> impl Responder {
     // verify api_key
     println!("{:#?}", data.clone().lock().unwrap().api_key);
+    println!("{:#?}", data.clone().lock().unwrap().db_pool.lock().unwrap().is_closed());
     println!("{:#?}", req.headers());
     format!("Hello {name}!\n")
 }
