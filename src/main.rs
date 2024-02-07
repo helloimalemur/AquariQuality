@@ -29,9 +29,9 @@ async fn greet(
         println!("{:#?}", data.clone().lock().unwrap().api_key);
         println!("{:#?}", data.clone().lock().unwrap().db_pool.lock().unwrap().is_closed());
         println!("{:#?}", req.headers());
-        format!("Hello {name}!\n")
+        format!("Hello {name}!\n").to_string()
     } else {
-        format!("invalid api key\n")
+        "invalid api key\n".to_string()
     }
 }
 
