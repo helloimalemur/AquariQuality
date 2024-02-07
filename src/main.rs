@@ -71,7 +71,7 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         App::new()
             .app_data(Data::new(Mutex::new(AppState::new(load_keys_from_file(), db_pool.clone()))))
-            .wrap(middleware::api_key::ApiKey::new("asdf".to_string()))
+            .wrap(api_key::ApiKey::new("asdf".to_string()))
             // .service()
             .default_service(web::to(default_handler))
             .service(web::resource("/hello/{name}").to(greet))
