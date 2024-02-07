@@ -47,6 +47,12 @@ async fn main() -> std::io::Result<()> {
     let settings_map = settings.try_deserialize::<HashMap<String, String>>()
         .expect("unable to deserialize settings");
 
+    // database connection
+
+
+    // database connection state management
+
+
     HttpServer::new(move || {
         App::new()
             .app_data(Data::new(Mutex::new(AppState::new(load_keys_from_file()))))
