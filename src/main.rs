@@ -26,9 +26,9 @@ async fn greet(
 ) -> String {
     if is_key_valid(req.headers().get("x-api-key").unwrap().to_str().unwrap().to_string(), data.clone().lock().unwrap().api_key.lock().unwrap().to_vec()) {
         // verify api_key
-        println!("{:#?}", data.clone().lock().unwrap().api_key);
-        println!("{:#?}", data.clone().lock().unwrap().db_pool.lock().unwrap().is_closed());
-        println!("{:#?}", req.headers());
+        // println!("{:#?}", data.clone().lock().unwrap().api_key);
+        // println!("{:#?}", data.clone().lock().unwrap().db_pool.lock().unwrap().is_closed());
+        // println!("{:#?}", req.headers());
         format!("Hello {name}!\n").to_string()
     } else {
         "invalid api key\n".to_string()
@@ -72,7 +72,7 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         App::new()
             .app_data(Data::new(Mutex::new(AppState::new(load_keys_from_file(), db_pool.clone()))))
-            .wrap(api_key::ApiKey::new("asdf".to_string()))
+            .wrap(api_key::ApiKey::new("".to_string()))
             .service(web::resource("/api/create").to(create_api_key))
             .service(web::resource("/api/create/").to(create_api_key))
             .service(web::resource("/api/delete/{key}").to(delete_api_key))

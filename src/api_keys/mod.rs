@@ -18,6 +18,8 @@ pub async fn create_api_key(
             let mut rng = rand::thread_rng();
             let new_key: u64 = rng.gen(); // generates a new api-key
             add_api_key_to_file(new_key.to_string());
+            data.lock().unwrap().api_key.lock().unwrap().push(new_key.to_string());
+            reload_state(data.clone(), load_keys_from_file());
             new_key.to_string()
         } else {
             "invalid api key\n".to_string()
@@ -36,12 +38,20 @@ pub async fn delete_api_key(
     if req.headers().get("x-api-key").is_some() {
         if is_key_valid(req.headers().get("x-api-key").unwrap().to_str().unwrap().to_string(), data.clone().lock().unwrap().api_key.lock().unwrap().to_vec()) {
             remove_api_key_from_file(key.to_string());
+            reload_state(data, load_keys_from_file());
             "ok".to_string()
         } else {
             "invalid api key\n".to_string()
         }
     } else {
         "invalid api key\n".to_string()
+    }
+}
+
+fn reload_state(data: Data<Mutex<AppState>>, keys: Vec<String>) {
+    data.lock().unwrap().api_key.lock().unwrap().clear();
+    for i in keys {
+        data.lock().unwrap().api_key.lock().unwrap().push(i);
     }
 }
 
@@ -80,29 +90,23 @@ fn remove_api_key_from_file(del_key: String) {
         }
     }
 
-    println!("{:#?}", rewrite_keys);
+    // println!("{:#?}", rewrite_keys);
 
     let _ = fs::remove_file("config/api_keys");
 
     // write keys back to file
-    let mut erase_file = OpenOptions::new()
+    let mut new_file = OpenOptions::new()
         .write(true)
         .create_new(true)
         .append(false)
         .open("config/api_keys")
         .unwrap();
-    erase_file.write("".as_bytes()).unwrap();
+    new_file.write("".as_bytes()).unwrap();
 
     for u in rewrite_keys {
         let formatted = format!("{}\n", u);
-        erase_file.write(formatted.as_bytes()).unwrap();
+        new_file.write(formatted.as_bytes()).unwrap();
     }
-    // let mut opt = OpenOptions::new()
-    //     .write(true)
-    //     .append(true)
-    //     .open("config/api_keys")
-    //     .unwrap();
-    // opt.write(new_key_formatted.as_bytes()).unwrap();
 }
 
 pub fn is_key_valid(key_to_test: String, keys: Vec<String>) -> bool {
