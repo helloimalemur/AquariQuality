@@ -52,8 +52,10 @@ async fn main() -> std::io::Result<()> {
         .try_deserialize::<HashMap<String, String>>()
         .expect("unable to deserialize settings");
 
+    let database_url = settings_map.get("database_url").expect("could not get database_url from settings");
+
     // database connection
-    let db_pool = MySqlPool::connect("mysql://user:pass@host/database")
+    let db_pool = MySqlPool::connect(database_url)
         .await
         .expect("unable to connect to database");
 

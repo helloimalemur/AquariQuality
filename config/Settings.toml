@@ -1,3 +1,3 @@
-database_url = "mysql://devuser:Password123!@127.0.0.1/mydatabase"
+database_url = "mysql://devuser:password@127.0.0.1/mydatabase"
 database_name = "mydatabase"
 api_key = "asimplekey"
