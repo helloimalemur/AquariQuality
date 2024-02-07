@@ -11,6 +11,6 @@ pub fn load_keys_from_file() -> Vec<String> {
     keys
 }
 
-pub fn check_if_key_is_valid(key_to_test: String, keys: Vec<String>) -> bool {
+pub fn is_key_valid(key_to_test: String, keys: Vec<String>) -> bool {
     keys.contains(&key_to_test)
 }

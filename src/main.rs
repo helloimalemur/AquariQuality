@@ -8,7 +8,7 @@ use std::collections::HashMap;
 use std::path::Path;
 use std::sync::Mutex;
 
-use crate::api_keys::load_keys_from_file;
+use crate::api_keys::{is_key_valid, load_keys_from_file};
 use actix_files::{Files, NamedFile};
 use actix_web::dev::Service;
 use actix_web::http::header::HeaderMap;
@@ -23,12 +23,16 @@ async fn greet(
     name: web::Path<String>,
     data: Data<Mutex<AppState>>,
     req: HttpRequest,
-) -> impl Responder {
-    // verify api_key
-    println!("{:#?}", data.clone().lock().unwrap().api_key);
-    println!("{:#?}", data.clone().lock().unwrap().db_pool.lock().unwrap().is_closed());
-    println!("{:#?}", req.headers());
-    format!("Hello {name}!\n")
+) -> String {
+    if is_key_valid(req.headers().get("x-test-header").unwrap().to_str().unwrap().to_string(), data.clone().lock().unwrap().api_key.lock().unwrap().to_vec()) {
+        // verify api_key
+        println!("{:#?}", data.clone().lock().unwrap().api_key);
+        println!("{:#?}", data.clone().lock().unwrap().db_pool.lock().unwrap().is_closed());
+        println!("{:#?}", req.headers());
+        format!("Hello {name}!\n")
+    } else {
+        format!("invalid api key\n")
+    }
 }
 
 pub struct AppState {
