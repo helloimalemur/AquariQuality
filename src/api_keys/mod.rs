@@ -35,7 +35,7 @@ pub async fn delete_api_key(
     // verify api_key
     if req.headers().get("x-api-key").is_some() {
         if is_key_valid(req.headers().get("x-api-key").unwrap().to_str().unwrap().to_string(), data.clone().lock().unwrap().api_key.lock().unwrap().to_vec()) {
-            let _ = delete_api_key(key, data, req);
+            remove_api_key_from_file(key.to_string());
             "ok".to_string()
         } else {
             "invalid api key\n".to_string()
@@ -80,14 +80,23 @@ fn remove_api_key_from_file(del_key: String) {
         }
     }
 
+    println!("{:#?}", rewrite_keys);
+
+    let _ = fs::remove_file("config/api_keys");
+
     // write keys back to file
     let mut erase_file = OpenOptions::new()
         .write(true)
+        .create_new(true)
         .append(false)
         .open("config/api_keys")
         .unwrap();
     erase_file.write("".as_bytes()).unwrap();
 
+    for u in rewrite_keys {
+        let formatted = format!("{}\n", u);
+        erase_file.write(formatted.as_bytes()).unwrap();
+    }
     // let mut opt = OpenOptions::new()
     //     .write(true)
     //     .append(true)
