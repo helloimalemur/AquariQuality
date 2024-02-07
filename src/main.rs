@@ -1,6 +1,9 @@
 // https://imfeld.dev/writing/actix-web-middleware
 // curl -XGET -H'x-test-header: headervalue' localhost:8080/hello/asdf
 mod middleware;
+
+use std::collections::HashMap;
+use std::path::Path;
 use middleware::*;
 
 use actix_web::{get, web, App, HttpServer, Responder, Either, HttpResponse, Error};
@@ -8,6 +11,7 @@ use actix_web::http::{Method, StatusCode};
 use actix_files::{Files, NamedFile};
 use actix_web::dev::Service;
 use actix_web::web::service;
+use config::Config;
 
 // #[get("/hello/{name}")]
 async fn greet(name: web::Path<String>) -> impl Responder {
@@ -16,10 +20,20 @@ async fn greet(name: web::Path<String>) -> impl Responder {
 
 #[actix_web::main] // or #[tokio::main]
 async fn main() -> std::io::Result<()> {
+    let settings = Config::builder()
+        .add_source("config/Settings")
+        .build()
+        .expect("could not load Settings.toml");
+    let settings_map = settings.try_deserialize::<HashMap<String, String>>()
+        .expect("unable to deserialize settings");
+
+
+
     HttpServer::new(|| {
         App::new()
             // .wrap(middleware::api_key::ApiKeyMiddlware)
             .wrap(middleware::api_key::ApiKey::new("asdf".to_string()))
+
             // .service(root)
             // .service()
             .default_service(web::to(default_handler))
