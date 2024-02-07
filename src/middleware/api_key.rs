@@ -84,7 +84,7 @@ impl<S, B> Service<ServiceRequest> for ApiKeyMiddlware<S>
         Box::pin(async move {
             let res = fut.await?;
 
-            println!("Hi from response");
+            // println!("Hi from response");
             Ok(res)
         })
     }

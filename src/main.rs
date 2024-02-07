@@ -8,17 +8,19 @@ use std::path::Path;
 use std::sync::Mutex;
 use middleware::*;
 
-use actix_web::{get, web, App, HttpServer, Responder, Either, HttpResponse, Error};
+use actix_web::{get, web, App, HttpServer, Responder, Either, HttpResponse, Error, HttpRequest};
 use actix_web::http::{Method, StatusCode};
 use actix_files::{Files, NamedFile};
 use actix_web::dev::Service;
+use actix_web::http::header::HeaderMap;
 use actix_web::web::{Data, service};
 use config::Config;
 use crate::api_keys::load_keys_from_file;
 
 // #[get("/hello/{name}")]
-async fn greet(name: web::Path<String>, data: Data<Mutex<AppState>>) -> impl Responder {
+async fn greet(name: web::Path<String>, data: Data<Mutex<AppState>>, req: HttpRequest) -> impl Responder {
     println!("{:#?}", data.clone().lock().unwrap().api_key);
+    println!("{:#?}", req.headers());
     format!("Hello {name}!\n")
 }
 
