@@ -1,1 +1,2 @@
+database_url = "mysql://user:pass@host/database"
 api_key = "asimplekey"

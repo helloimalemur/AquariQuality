@@ -1,25 +1,29 @@
 // https://imfeld.dev/writing/actix-web-middleware
 // curl -XGET -H'x-test-header: headervalue' localhost:8080/hello/asdf
-mod middleware;
 mod api_keys;
+mod middleware;
 
+use middleware::*;
 use std::collections::HashMap;
 use std::path::Path;
 use std::sync::Mutex;
-use middleware::*;
 
-use actix_web::{get, web, App, HttpServer, Responder, Either, HttpResponse, Error, HttpRequest};
-use actix_web::http::{Method, StatusCode};
+use crate::api_keys::load_keys_from_file;
 use actix_files::{Files, NamedFile};
 use actix_web::dev::Service;
 use actix_web::http::header::HeaderMap;
-use actix_web::web::{Data, service};
+use actix_web::http::{Method, StatusCode};
+use actix_web::web::{service, Data};
+use actix_web::{get, web, App, Either, Error, HttpRequest, HttpResponse, HttpServer, Responder};
 use config::Config;
-use crate::api_keys::load_keys_from_file;
+use sqlx::MySqlPool;
 
 // #[get("/hello/{name}")]
-async fn greet(name: web::Path<String>, data: Data<Mutex<AppState>>, req: HttpRequest) -> impl Responder {
-
+async fn greet(
+    name: web::Path<String>,
+    data: Data<Mutex<AppState>>,
+    req: HttpRequest,
+) -> impl Responder {
     // verify api_key
     println!("{:#?}", data.clone().lock().unwrap().api_key);
     println!("{:#?}", req.headers());
@@ -27,7 +31,7 @@ async fn greet(name: web::Path<String>, data: Data<Mutex<AppState>>, req: HttpRe
 }
 
 pub struct AppState {
-    api_key: Mutex<Vec<String>>
+    api_key: Mutex<Vec<String>>,
 }
 
 impl AppState {
@@ -44,30 +48,30 @@ async fn main() -> std::io::Result<()> {
         .add_source(config::File::with_name("config/Settings"))
         .build()
         .expect("could not load Settings.toml");
-    let settings_map = settings.try_deserialize::<HashMap<String, String>>()
+    let settings_map = settings
+        .try_deserialize::<HashMap<String, String>>()
         .expect("unable to deserialize settings");
 
     // database connection
-
+    let db_pool = MySqlPool::connect("mysql://user:pass@host/database")
+        .await
+        .expect("unable to connect to database");
 
     // database connection state management
-
 
     HttpServer::new(move || {
         App::new()
             .app_data(Data::new(Mutex::new(AppState::new(load_keys_from_file()))))
             .wrap(middleware::api_key::ApiKey::new("asdf".to_string()))
-
             // .service(root)
             // .service()
             .default_service(web::to(default_handler))
             .service(web::resource("/hello/{name}").to(greet))
     })
-        .bind(("127.0.0.1", 8080))?
-        .run()
-        .await
+    .bind(("127.0.0.1", 8080))?
+    .run()
+    .await
 }
-
 
 async fn default_handler(req_method: Method) -> Result<impl Responder, Error> {
     match req_method {
