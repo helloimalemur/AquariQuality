@@ -19,6 +19,8 @@ use crate::api_keys::load_keys_from_file;
 
 // #[get("/hello/{name}")]
 async fn greet(name: web::Path<String>, data: Data<Mutex<AppState>>, req: HttpRequest) -> impl Responder {
+
+    // verify api_key
     println!("{:#?}", data.clone().lock().unwrap().api_key);
     println!("{:#?}", req.headers());
     format!("Hello {name}!\n")
