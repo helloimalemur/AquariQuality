@@ -71,7 +71,7 @@ where
         // verify API key
         // println!("{:#?}", req.headers());
 
-        // if let hvalue = Some(req.headers().get("x-test-header")) {
+        // if let hvalue = Some(req.headers().get("x-api-key")) {
         //     println!("Value: {}", hvalue.unwrap().unwrap().to_str().unwrap().to_string());
         // }
 

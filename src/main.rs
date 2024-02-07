@@ -1,5 +1,5 @@
 // https://imfeld.dev/writing/actix-web-middleware
-// curl -XGET -H'x-test-header: headervalue' localhost:8080/hello/asdf
+// curl -XGET -H'x-api-key: headervalue' localhost:8080/hello/asdf
 mod api_keys;
 mod middleware;
 
@@ -18,13 +18,12 @@ use actix_web::{get, web, App, Either, Error, HttpRequest, HttpResponse, HttpSer
 use config::Config;
 use sqlx::{MySql, MySqlPool, Pool};
 
-// #[get("/hello/{name}")]
 async fn greet(
     name: web::Path<String>,
     data: Data<Mutex<AppState>>,
     req: HttpRequest,
 ) -> String {
-    if is_key_valid(req.headers().get("x-test-header").unwrap().to_str().unwrap().to_string(), data.clone().lock().unwrap().api_key.lock().unwrap().to_vec()) {
+    if is_key_valid(req.headers().get("x-api-key").unwrap().to_str().unwrap().to_string(), data.clone().lock().unwrap().api_key.lock().unwrap().to_vec()) {
         // verify api_key
         println!("{:#?}", data.clone().lock().unwrap().api_key);
         println!("{:#?}", data.clone().lock().unwrap().db_pool.lock().unwrap().is_closed());
@@ -34,6 +33,25 @@ async fn greet(
         "invalid api key\n".to_string()
     }
 }
+
+#[get("/api/create/")]
+async fn create_api_key(
+    name: web::Path<String>,
+    data: Data<Mutex<AppState>>,
+    req: HttpRequest,
+) -> String {
+    // verify api_key
+    if is_key_valid(req.headers().get("x-api-key").unwrap().to_str().unwrap().to_string(), data.clone().lock().unwrap().api_key.lock().unwrap().to_vec()) {
+        println!("{:#?}", data.clone().lock().unwrap().api_key);
+        println!("{:#?}", data.clone().lock().unwrap().db_pool.lock().unwrap().is_closed());
+        println!("{:#?}", req.headers());
+        let new_key = format!("{name}\n").to_string();
+    } else {
+        "invalid api key\n".to_string();
+    }
+    "ok".to_string()
+}
+
 
 pub struct AppState {
     api_key: Mutex<Vec<String>>,
@@ -72,7 +90,7 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .app_data(Data::new(Mutex::new(AppState::new(load_keys_from_file(), db_pool.clone()))))
             .wrap(api_key::ApiKey::new("asdf".to_string()))
-            // .service()
+            .service(create_api_key)
             .default_service(web::to(default_handler))
             .service(web::resource("/hello/{name}").to(greet))
     })
