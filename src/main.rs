@@ -16,7 +16,7 @@ use actix_web::http::{Method, StatusCode};
 use actix_web::web::{service, Data};
 use actix_web::{get, web, App, Either, Error, HttpRequest, HttpResponse, HttpServer, Responder};
 use config::Config;
-use sqlx::MySqlPool;
+use sqlx::{MySql, MySqlPool, Pool};
 
 // #[get("/hello/{name}")]
 async fn greet(
@@ -32,12 +32,14 @@ async fn greet(
 
 pub struct AppState {
     api_key: Mutex<Vec<String>>,
+    pub db_pool: Mutex<Pool<MySql>>,
 }
 
 impl AppState {
-    pub fn new(keys: Vec<String>) -> AppState {
+    pub fn new(keys: Vec<String>, db_pool: Pool<MySql>) -> AppState {
         AppState {
             api_key: Mutex::new(keys),
+            db_pool: Mutex::new(db_pool)
         }
     }
 }
@@ -63,7 +65,7 @@ async fn main() -> std::io::Result<()> {
 
     HttpServer::new(move || {
         App::new()
-            .app_data(Data::new(Mutex::new(AppState::new(load_keys_from_file()))))
+            .app_data(Data::new(Mutex::new(AppState::new(load_keys_from_file(), db_pool.clone()))))
             .wrap(middleware::api_key::ApiKey::new("asdf".to_string()))
             // .service(root)
             // .service()
