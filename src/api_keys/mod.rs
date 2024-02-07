@@ -7,6 +7,10 @@ pub fn load_keys_from_file() -> Vec<String> {
     for line in file.lines() {
         keys.push(line.unwrap())
     }
-    println!("{:#?}", keys);
+    // println!("{:#?}", keys);
     keys
+}
+
+pub fn check_if_key_is_valid(key_to_test: String, keys: Vec<String>) -> bool {
+    keys.contains(&key_to_test)
 }

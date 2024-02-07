@@ -6,6 +6,7 @@ use actix_web::{
     Error,
 };
 use futures_util::future::LocalBoxFuture;
+use crate::AppState;
 
 // There are two steps in middleware processing.
 // 1. Middleware initialization, middleware factory gets called with
@@ -35,8 +36,8 @@ impl<S, B> Transform<S, ServiceRequest> for ApiKey
 {
     type Response = ServiceResponse<B>;
     type Error = Error;
-    type InitError = ();
     type Transform = ApiKeyMiddlware<S>;
+    type InitError = ();
     type Future = Ready<Result<Self::Transform, Self::InitError>>;
 
     fn new_transform(&self, service: S) -> Self::Future {
@@ -61,14 +62,19 @@ impl<S, B> Service<ServiceRequest> for ApiKeyMiddlware<S>
     forward_ready!(service);
 
     fn call(&self, req: ServiceRequest) -> Self::Future {
-        println!("Hi from start. You requested: {}", req.path());
+        // let bind = req.app_data::<AppState>().unwrap().clone();
+        // let keys = bind.api_key.lock().unwrap();
+
+        // println!("Hi from start. You requested: {}", req.path());
+
+        // println!("{:#?}", keys);
 
         // verify API key
-        println!("{:#?}", req.headers());
+        // println!("{:#?}", req.headers());
 
-        if let hvalue = Some(req.headers().get("x-test-header")) {
-            println!("Value: {}", hvalue.unwrap().unwrap().to_str().unwrap().to_string());
-        }
+        // if let hvalue = Some(req.headers().get("x-test-header")) {
+        //     println!("Value: {}", hvalue.unwrap().unwrap().to_str().unwrap().to_string());
+        // }
 
 
 

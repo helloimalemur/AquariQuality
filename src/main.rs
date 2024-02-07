@@ -16,13 +16,22 @@ use actix_web::web::{Data, service};
 use config::Config;
 use crate::api_keys::load_keys_from_file;
 
-struct AppState {
-    api_keys: Mutex<Vec<String>>
+// #[get("/hello/{name}")]
+async fn greet(name: web::Path<String>, data: Data<Mutex<AppState>>) -> impl Responder {
+    println!("{:#?}", data.clone().lock().unwrap().api_key);
+    format!("Hello {name}!\n")
 }
 
-// #[get("/hello/{name}")]
-async fn greet(name: web::Path<String>) -> impl Responder {
-    format!("Hello {name}!\n")
+pub struct AppState {
+    api_key: Mutex<Vec<String>>
+}
+
+impl AppState {
+    pub fn new(keys: Vec<String>) -> AppState {
+        AppState {
+            api_key: Mutex::new(keys),
+        }
+    }
 }
 
 #[actix_web::main] // or #[tokio::main]
@@ -34,22 +43,9 @@ async fn main() -> std::io::Result<()> {
     let settings_map = settings.try_deserialize::<HashMap<String, String>>()
         .expect("unable to deserialize settings");
 
-
-    // Note: web::Data created _outside_ HttpServer::new closure
-    let app_state = web::Data::new(AppState {
-        api_keys: Mutex::new(load_keys_from_file())
-    });
-
-    // struct AppStateWithCounter {
-    //     counter: Mutex<i32>, // <- Mutex is necessary to mutate safely across threads
-    // }
-    // let counter = web::Data::new(AppStateWithCounter {
-    //     counter: Mutex::new(0),
-    // });
-
     HttpServer::new(move || {
         App::new()
-            .app_data(Data::new(app_state.clone()))
+            .app_data(Data::new(Mutex::new(AppState::new(load_keys_from_file()))))
             .wrap(middleware::api_key::ApiKey::new("asdf".to_string()))
 
             // .service(root)
