@@ -1,17 +1,24 @@
 // https://imfeld.dev/writing/actix-web-middleware
 // curl -XGET -H'x-test-header: headervalue' localhost:8080/hello/asdf
 mod middleware;
+mod api_keys;
 
 use std::collections::HashMap;
 use std::path::Path;
+use std::sync::Mutex;
 use middleware::*;
 
 use actix_web::{get, web, App, HttpServer, Responder, Either, HttpResponse, Error};
 use actix_web::http::{Method, StatusCode};
 use actix_files::{Files, NamedFile};
 use actix_web::dev::Service;
-use actix_web::web::service;
+use actix_web::web::{Data, service};
 use config::Config;
+use crate::api_keys::load_keys_from_file;
+
+struct AppState {
+    api_keys: Mutex<Vec<String>>
+}
 
 // #[get("/hello/{name}")]
 async fn greet(name: web::Path<String>) -> impl Responder {
@@ -21,17 +28,28 @@ async fn greet(name: web::Path<String>) -> impl Responder {
 #[actix_web::main] // or #[tokio::main]
 async fn main() -> std::io::Result<()> {
     let settings = Config::builder()
-        .add_source("config/Settings")
+        .add_source(config::File::with_name("config/Settings"))
         .build()
         .expect("could not load Settings.toml");
     let settings_map = settings.try_deserialize::<HashMap<String, String>>()
         .expect("unable to deserialize settings");
 
 
+    // Note: web::Data created _outside_ HttpServer::new closure
+    let app_state = web::Data::new(AppState {
+        api_keys: Mutex::new(load_keys_from_file())
+    });
 
-    HttpServer::new(|| {
+    // struct AppStateWithCounter {
+    //     counter: Mutex<i32>, // <- Mutex is necessary to mutate safely across threads
+    // }
+    // let counter = web::Data::new(AppStateWithCounter {
+    //     counter: Mutex::new(0),
+    // });
+
+    HttpServer::new(move || {
         App::new()
-            // .wrap(middleware::api_key::ApiKeyMiddlware)
+            .app_data(Data::new(app_state.clone()))
             .wrap(middleware::api_key::ApiKey::new("asdf".to_string()))
 
             // .service(root)
