@@ -37,7 +37,7 @@ async fn greet(
 
 pub struct AppState {
     api_key: Mutex<Vec<String>>,
-    pub db_pool: Mutex<Pool<MySql>>,
+    db_pool: Mutex<Pool<MySql>>,
 }
 
 impl AppState {
