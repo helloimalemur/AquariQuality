@@ -2,6 +2,8 @@
 // curl -XGET -H'x-api-key: headervalue' localhost:8080/hello/asdf
 mod api_keys;
 mod middleware;
+mod entities;
+
 use crate::api_keys::{create_api_key, delete_api_key, is_key_valid, load_keys_from_file};
 use crate::middleware::api_key;
 use std::collections::HashMap;
