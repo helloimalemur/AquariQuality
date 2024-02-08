@@ -16,6 +16,15 @@ pub struct Fish {
     qty: i64
 }
 
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+pub struct FishRequest {
+    user_id: i64,
+    tank_id: i64,
+    name: String,
+    species: String,
+    qty: i64
+}
+
 // CREATE TABLE `fish` (
 // `userid` INT NOT NULL,
 // `tankid` INT NOT NULL,
