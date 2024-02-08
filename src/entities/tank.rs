@@ -1,3 +1,4 @@
+use sqlx::{MySql, Pool};
 use crate::entities::fish::Fish;
 
 #[derive(Clone, Debug, Ord, PartialOrd, Eq, PartialEq)]
@@ -25,3 +26,7 @@ pub struct Tank {
 // `weight` INT,
 // PRIMARY KEY (`userid`)
 // ) ENGINE=InnoDB;
+
+pub fn create_tank(user_id: i64, tank: Tank, db_pool: Pool<MySql>) {}
+pub fn delete_tank(user_id: i64, tank: Tank, db_pool: Pool<MySql>) {}
+pub fn modify_tank(user_id: i64, tank: Tank, db_pool: Pool<MySql>) {}
