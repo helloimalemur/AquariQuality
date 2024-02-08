@@ -69,8 +69,7 @@ async fn main() -> std::io::Result<()> {
             .app_data(state.clone())
             .wrap(api_key::ApiKey::new("".to_string()))
             // src/api_keys
-            .service(web::resource("/api/create").to(create_api_key))
-            .service(web::resource("/api/create/").to(create_api_key))
+            .service(web::resource("/api/create/key/").to(create_api_key))
             .service(web::resource("/api/delete/{key}").to(delete_api_key))
             .service(web::resource("/api/delete/{key}/").to(delete_api_key))
             // src/entities/users
