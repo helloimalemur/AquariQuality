@@ -13,13 +13,13 @@ pub async fn create_api_key(
     req: HttpRequest,
 ) -> String {
     // verify api_key
+
     if req.headers().get("x-api-key").is_some() {
         if is_key_valid(req.headers().get("x-api-key").unwrap().to_str().unwrap().to_string(), data.lock().unwrap().api_key.lock().unwrap().to_vec()) {
             let mut rng = rand::thread_rng();
             let new_key: u64 = rng.gen(); // generates a new api-key
+            data.lock().as_mut().unwrap().api_key.lock().as_mut().unwrap().push(new_key.to_string());
             add_api_key_to_file(new_key.to_string());
-            reload_state(&data.lock().unwrap().api_key, load_keys_from_file());
-            // println!("{}", data.lock().unwrap().api_key.lock().unwrap().last().unwrap());
             new_key.to_string()
         } else {
             "invalid api key\n".to_string()
@@ -59,7 +59,7 @@ fn reload_state(data: &Mutex<Vec<String>>, keys: Vec<String>) {
         data.lock().as_mut().unwrap().push(i)
     }
 
-    println!("{}", &data.lock().unwrap().last().unwrap());
+    // println!("{}", &data.lock().unwrap().last().unwrap());
 }
 
 pub fn load_keys_from_file() -> Vec<String> {

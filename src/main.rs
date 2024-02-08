@@ -62,11 +62,11 @@ async fn main() -> std::io::Result<()> {
         .await
         .expect("unable to connect to database");
 
-    // database connection state management
+    let state = Data::new(Mutex::new(AppState::new(load_keys_from_file(), db_pool.clone())));
 
     HttpServer::new(move || {
         App::new()
-            .app_data(Data::new(Mutex::new(AppState::new(load_keys_from_file(), db_pool.clone()))))
+            .app_data(state.clone())
             .wrap(api_key::ApiKey::new("".to_string()))
             .service(web::resource("/api/create").to(create_api_key))
             .service(web::resource("/api/create/").to(create_api_key))
