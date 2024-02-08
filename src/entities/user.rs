@@ -1,9 +1,9 @@
-use std::sync::Mutex;
+use std::sync::{Mutex, MutexGuard};
 use actix_web::{error, HttpRequest, HttpResponse, web};
 use actix_web::error::ErrorBadRequest;
 use actix_web::web::Data;
 use futures_util::StreamExt;
-use rand::Rng;
+use rand::{random, Rng};
 use sqlx::{MySql, Pool};
 use crate::api_keys::is_key_valid;
 use crate::AppState;
@@ -43,6 +43,7 @@ pub async fn create_user_route(
         if is_key_valid(req.headers().get("x-api-key").unwrap().to_str().unwrap().to_string(), data.lock().unwrap().api_key.lock().unwrap().to_vec()) {
 
             let mut body = web::BytesMut::new();
+
             while let Some(chunk) = payload.next().await {
                 let chunk = chunk.unwrap();
                 // limit max size of in-memory payload
@@ -54,8 +55,21 @@ pub async fn create_user_route(
 
             // body is loaded, now we can deserialize serde-json
             let obj = serde_json::from_slice::<UserRequest>(&body).unwrap();
-            println!("{:#?}", obj);
+            let mut rand = rand::thread_rng();
+            let new_user_id: i64 = rand.gen();
 
+            let new_user = User {
+                user_id: new_user_id,
+                name: obj.name,
+                email: obj.email,
+                tanks: vec![],
+            };
+
+            println!("{:#?}", new_user.clone());
+
+
+
+            create_user(new_user, data.clone());
 
             "ok\n".to_string()
         } else {
@@ -66,7 +80,12 @@ pub async fn create_user_route(
     }
 }
 
-pub fn create_user(user: User, db_pool: Pool<MySql>) {}
+pub fn create_user(user: User, data: Data<Mutex<AppState>>) {
+    let mut binding = data.lock();
+    let mut app_state = binding.as_mut().unwrap().db_pool.lock();
+    let is_closed = app_state.unwrap().is_closed();
+    println!("{}", !is_closed);
+}
 
 pub async fn delete_user_route(
     // name: web::Path<String>,
