@@ -7,7 +7,7 @@ use crate::api_keys::is_key_valid;
 use crate::AppState;
 use crate::entities::tank::Tank;
 
-#[derive(Clone, Debug, Ord, PartialOrd, Eq, PartialEq)]
+#[derive(Clone, Debug)]
 struct User {
     user_id: i64,
     name: String,

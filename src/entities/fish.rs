@@ -6,7 +6,7 @@ use crate::api_keys::is_key_valid;
 use crate::AppState;
 use crate::entities::parameter::Parameter;
 
-#[derive(Clone, Debug, Ord, PartialOrd, Eq, PartialEq)]
+#[derive(Clone, Debug)]
 pub struct Fish {
     user_id: i64,
     tank_id: i64,
