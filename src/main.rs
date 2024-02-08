@@ -2,20 +2,15 @@
 // curl -XGET -H'x-api-key: headervalue' localhost:8080/hello/asdf
 mod api_keys;
 mod middleware;
-
-use middleware::*;
-use std::collections::HashMap;
-use std::path::Path;
-use std::sync::Mutex;
-
 use crate::api_keys::{create_api_key, delete_api_key, is_key_valid, load_keys_from_file};
-use actix_files::{Files, NamedFile};
+use crate::middleware::api_key;
+use std::collections::HashMap;
+use std::sync::Mutex;
+use actix_files::{NamedFile};
 use actix_web::dev::Service;
-use actix_web::http::header::HeaderMap;
 use actix_web::http::{Method, StatusCode};
-use actix_web::web::{service, Data};
+use actix_web::web::{Data};
 use actix_web::{get, web, App, Either, Error, HttpRequest, HttpResponse, HttpServer, Responder};
-use actix_web::middleware::NormalizePath;
 use config::Config;
 use sqlx::{MySql, MySqlPool, Pool};
 
