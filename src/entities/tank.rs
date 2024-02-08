@@ -15,9 +15,22 @@ pub struct Tank {
     length: i64,
     width: i64,
     volume: i64,
-    weight: i64,
+    weight: f64,
     occupants: Vec<Fish>
 }
+
+impl Tank {
+    pub fn calc_volume(&mut self) {
+        self.volume = (self.length/12) * (self.width/12) * (self.height/12);
+    }
+
+    pub fn calc_approx_weight(&mut self) {
+        self.calc_volume();
+        self.weight = (self.volume as f64) * 7.47f64
+
+    }
+}
+
 
 // CREATE TABLE `tank` (
 // `userid` INT NOT NULL,
@@ -28,7 +41,7 @@ pub struct Tank {
 // `length` INT,
 // `width` INT,
 // `volume` INT,
-// `weight` INT,
+// `weight` FLOAT,
 // PRIMARY KEY (`userid`)
 // ) ENGINE=InnoDB;
 

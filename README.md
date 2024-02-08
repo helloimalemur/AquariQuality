@@ -40,7 +40,7 @@ CREATE TABLE `tank` (
     `length` INT,
     `width` INT,
     `volume` INT,
-    `weight` INT,
+    `weight` FLOAT,
     PRIMARY KEY (`userid`)
 ) ENGINE=InnoDB;
 ```
