@@ -17,6 +17,12 @@ struct User {
     tanks: Vec<Tank>
 }
 
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+struct UserRequest {
+    name: String,
+    email: String
+}
+
 // CREATE TABLE `user` (
 // `userid` INT NOT NULL,
 // `name` VARCHAR(255) NOT NULL,
