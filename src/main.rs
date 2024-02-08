@@ -14,17 +14,12 @@ use actix_web::{get, web, App, Either, Error, HttpRequest, HttpResponse, HttpSer
 use config::Config;
 use sqlx::{MySql, MySqlPool, Pool};
 
-async fn greet(
-    name: web::Path<String>,
+async fn root(
     data: Data<Mutex<AppState>>,
     req: HttpRequest,
 ) -> String {
     if is_key_valid(req.headers().get("x-api-key").unwrap().to_str().unwrap().to_string(), data.clone().lock().unwrap().api_key.lock().unwrap().to_vec()) {
-        // verify api_key
-        // println!("{:#?}", data.clone().lock().unwrap().api_key);
-        // println!("{:#?}", data.clone().lock().unwrap().db_pool.lock().unwrap().is_closed());
-        // println!("{:#?}", req.headers());
-        format!("Hello {name}!\n").to_string()
+        "Hello Astronaut!\n".to_string()
     } else {
         "invalid api key\n".to_string()
     }
@@ -68,12 +63,16 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .app_data(state.clone())
             .wrap(api_key::ApiKey::new("".to_string()))
+            // src/api_keys
             .service(web::resource("/api/create").to(create_api_key))
             .service(web::resource("/api/create/").to(create_api_key))
             .service(web::resource("/api/delete/{key}").to(delete_api_key))
             .service(web::resource("/api/delete/{key}/").to(delete_api_key))
+            // src/entities/users
+            // src/entities/tanks
+            // src/entities/parameters
+            .service(web::resource("/").to(root))
             .default_service(web::to(default_handler))
-            .service(web::resource("/hello/{name}").to(greet))
     })
     .bind(("127.0.0.1", 8080))?
     .run()
