@@ -4,14 +4,14 @@ use actix_web::error::ErrorBadRequest;
 use actix_web::web::Data;
 use futures_util::StreamExt;
 use rand::{random, Rng};
-use sqlx::{MySql, Pool};
+use sqlx::{MySql, Pool, Row};
 use crate::api_keys::is_key_valid;
 use crate::AppState;
 use crate::entities::tank::Tank;
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 struct User {
-    user_id: i64,
+    user_id: u16,
     name: String,
     email: String,
     tanks: Vec<Tank>
@@ -54,24 +54,30 @@ pub async fn create_user_route(
             }
 
             // body is loaded, now we can deserialize serde-json
-            let obj = serde_json::from_slice::<UserRequest>(&body).unwrap();
-            let mut rand = rand::thread_rng();
-            let new_user_id: i64 = rand.gen();
+            if let Ok(obj) = serde_json::from_slice::<UserRequest>(&body) {
+                let mut rand = rand::thread_rng();
+                let new_user_id: u16 = rand.gen();
 
-            let new_user = User {
-                user_id: new_user_id,
-                name: obj.name,
-                email: obj.email,
-                tanks: vec![],
-            };
+                let new_user = User {
+                    user_id: new_user_id,
+                    name: obj.name,
+                    email: obj.email,
+                    tanks: vec![],
+                };
 
-            println!("{:#?}", new_user.clone());
-
-
-
-            create_user(new_user, data.clone());
-
-            "ok\n".to_string()
+                println!("{:#?}", new_user.clone());
+                let user_exists = check_user_exist(new_user.clone(), data.clone()).await;
+                if !user_exists {
+                    create_user(new_user.clone(), data.clone()).await;
+                    "user created\n".to_string()
+                } else if user_exists {
+                    "user exists\n".to_string()
+                } else {
+                    "error creating user\n".to_string()
+                }
+            } else {
+                "error creating user\n".to_string()
+            }
         } else {
             "invalid api key\n".to_string()
         }
@@ -80,11 +86,59 @@ pub async fn create_user_route(
     }
 }
 
-pub fn create_user(user: User, data: Data<Mutex<AppState>>) {
-    let mut binding = data.lock();
-    let mut app_state = binding.as_mut().unwrap().db_pool.lock();
-    let is_closed = app_state.unwrap().is_closed();
-    println!("{}", !is_closed);
+async fn check_user_exist(user: User, mut data: Data<Mutex<AppState>>) -> bool {
+    let mut user_exists: bool = false;
+    // let data_2 = data.clone();
+    let mut app_state = data.lock();
+    let mut db_pool = app_state.as_mut().unwrap().db_pool.lock().unwrap();
+
+    // let mut app_state_2 = data_2.lock();
+    // let mut db_pool_2 = app_state_2.as_mut().unwrap().db_pool.lock().unwrap();
+
+
+    let mut query_result_string = String::new();
+    if let Ok(query_result_1) = sqlx::query("SELECT userid FROM user WHERE userid=(?)")
+        .bind(user.user_id)
+        .fetch_one(&*db_pool)
+        .await {
+        query_result_string = query_result_1.get("userid");
+
+
+    }
+
+    let mut query_result_string_2 = String::new();
+    if let Ok(query_result_2) = sqlx::query("SELECT email FROM user WHERE email LIKE (?)")
+        .bind(user.email)
+        .fetch_one(&*db_pool)
+        .await {
+        query_result_string = query_result_2.get("email");
+
+    }
+
+
+    if !query_result_string_2.is_empty() || !query_result_string.is_empty() {
+        user_exists = true;
+    }
+
+    println!("User exists: {}", user_exists);
+    user_exists
+}
+
+pub async fn create_user(user: User, data: Data<Mutex<AppState>>) {
+    let mut app_state = data.lock();
+    let mut db_pool = app_state.as_mut().unwrap().db_pool.lock().unwrap();
+    let is_closed = db_pool.is_closed();
+    println!("Database connected: {}", !is_closed);
+
+    let query_result = sqlx::query("INSERT INTO user (userid, name, email) VALUES (?,?,?)")
+        .bind(user.user_id)
+        .bind(user.name)
+        .bind(user.email)
+        .execute(&*db_pool)
+        .await
+        .unwrap();
+
+    println!("{:#?}", query_result);
 }
 
 pub async fn delete_user_route(
