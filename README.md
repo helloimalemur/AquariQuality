@@ -54,3 +54,15 @@ CREATE TABLE `parameter` (
     PRIMARY KEY (`userid`)
 ) ENGINE=InnoDB;
 ```
+
+```sql
+CREATE TABLE `fish` (
+`userid` INT NOT NULL,
+`tankid` INT NOT NULL,
+`fishid` INT NOT NULL,
+`name` VARCHAR(255) NOT NULL,
+`species` VARCHAR(255) NOT NULL,
+`qty` INT,
+PRIMARY KEY (`fishid`)
+) ENGINE=InnoDB;
+```
