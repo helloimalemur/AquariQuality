@@ -1,26 +1,26 @@
-use std::sync::{Mutex, MutexGuard};
-use actix_web::{error, HttpRequest, HttpResponse, web};
+use crate::api_keys::is_key_valid;
+use crate::entities::tank::Tank;
+use crate::AppState;
 use actix_web::error::ErrorBadRequest;
 use actix_web::web::Data;
+use actix_web::{error, web, HttpRequest, HttpResponse};
 use futures_util::StreamExt;
 use rand::{random, Rng};
 use sqlx::{MySql, Pool, Row};
-use crate::api_keys::is_key_valid;
-use crate::AppState;
-use crate::entities::tank::Tank;
+use std::sync::{Mutex, MutexGuard};
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 struct User {
     user_id: u16,
     name: String,
     email: String,
-    tanks: Vec<Tank>
+    tanks: Vec<Tank>,
 }
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 struct UserRequest {
     name: String,
-    email: String
+    email: String,
 }
 
 // CREATE TABLE `user` (
@@ -38,10 +38,17 @@ pub async fn create_user_route(
     req: HttpRequest,
 ) -> String {
     const MAX_SIZE: usize = 262_144; // max payload size is 256k
-    // verify api_key
+                                     // verify api_key
     if req.headers().get("x-api-key").is_some() {
-        if is_key_valid(req.headers().get("x-api-key").unwrap().to_str().unwrap().to_string(), data.lock().unwrap().api_key.lock().unwrap().to_vec()) {
-
+        if is_key_valid(
+            req.headers()
+                .get("x-api-key")
+                .unwrap()
+                .to_str()
+                .unwrap()
+                .to_string(),
+            data.lock().unwrap().api_key.lock().unwrap().to_vec(),
+        ) {
             let mut body = web::BytesMut::new();
 
             while let Some(chunk) = payload.next().await {
@@ -95,26 +102,23 @@ async fn check_user_exist(user: User, mut data: Data<Mutex<AppState>>) -> bool {
     // let mut app_state_2 = data_2.lock();
     // let mut db_pool_2 = app_state_2.as_mut().unwrap().db_pool.lock().unwrap();
 
-
     let mut query_result_string = String::new();
     if let Ok(query_result_1) = sqlx::query("SELECT userid FROM user WHERE userid=(?)")
         .bind(user.user_id)
         .fetch_one(&*db_pool)
-        .await {
+        .await
+    {
         query_result_string = query_result_1.get("userid");
-
-
     }
 
     let mut query_result_string_2 = String::new();
     if let Ok(query_result_2) = sqlx::query("SELECT email FROM user WHERE email LIKE (?)")
         .bind(user.email)
         .fetch_one(&*db_pool)
-        .await {
+        .await
+    {
         query_result_string = query_result_2.get("email");
-
     }
-
 
     if !query_result_string_2.is_empty() || !query_result_string.is_empty() {
         user_exists = true;
@@ -148,7 +152,15 @@ pub async fn delete_user_route(
 ) -> String {
     // verify api_key
     if req.headers().get("x-api-key").is_some() {
-        if is_key_valid(req.headers().get("x-api-key").unwrap().to_str().unwrap().to_string(), data.lock().unwrap().api_key.lock().unwrap().to_vec()) {
+        if is_key_valid(
+            req.headers()
+                .get("x-api-key")
+                .unwrap()
+                .to_str()
+                .unwrap()
+                .to_string(),
+            data.lock().unwrap().api_key.lock().unwrap().to_vec(),
+        ) {
             "ok\n".to_string()
         } else {
             "invalid api key\n".to_string()
@@ -167,7 +179,15 @@ pub async fn modify_user_route(
 ) -> String {
     // verify api_key
     if req.headers().get("x-api-key").is_some() {
-        if is_key_valid(req.headers().get("x-api-key").unwrap().to_str().unwrap().to_string(), data.lock().unwrap().api_key.lock().unwrap().to_vec()) {
+        if is_key_valid(
+            req.headers()
+                .get("x-api-key")
+                .unwrap()
+                .to_str()
+                .unwrap()
+                .to_string(),
+            data.lock().unwrap().api_key.lock().unwrap().to_vec(),
+        ) {
             "ok\n".to_string()
         } else {
             "invalid api key\n".to_string()

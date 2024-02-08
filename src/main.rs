@@ -1,35 +1,47 @@
 // https://imfeld.dev/writing/actix-web-middleware
 // curl -XGET -H'x-api-key: headervalue' localhost:8080/hello/asdf
 mod api_keys;
-mod middleware;
 mod entities;
+mod middleware;
 
 use crate::api_keys::{create_api_key, delete_api_key, is_key_valid, load_keys_from_file};
+use crate::entities::parameter::{
+    create_parameter_route, delete_parameter_route, modify_parameter_route,
+};
+use crate::entities::tank::{create_tank_route, delete_tank_route, modify_tank_route};
+use crate::entities::user::{create_user_route, delete_user_route, modify_user_route};
 use crate::middleware::api_key;
-use std::collections::HashMap;
-use std::sync::Mutex;
-use actix_files::{NamedFile};
+use actix_files::NamedFile;
 use actix_web::dev::Service;
 use actix_web::http::{Method, StatusCode};
-use actix_web::web::{Data};
+use actix_web::web::Data;
 use actix_web::{get, web, App, Either, Error, HttpRequest, HttpResponse, HttpServer, Responder};
 use config::Config;
 use sqlx::{MySql, MySqlPool, Pool};
-use crate::entities::parameter::{create_parameter_route, delete_parameter_route, modify_parameter_route};
-use crate::entities::tank::{create_tank_route, delete_tank_route, modify_tank_route};
-use crate::entities::user::{create_user_route, delete_user_route, modify_user_route};
+use std::collections::HashMap;
+use std::sync::Mutex;
 
-async fn root(
-    data: Data<Mutex<AppState>>,
-    req: HttpRequest,
-) -> String {
-    if is_key_valid(req.headers().get("x-api-key").unwrap().to_str().unwrap().to_string(), data.clone().lock().unwrap().api_key.lock().unwrap().to_vec()) {
+async fn root(data: Data<Mutex<AppState>>, req: HttpRequest) -> String {
+    if is_key_valid(
+        req.headers()
+            .get("x-api-key")
+            .unwrap()
+            .to_str()
+            .unwrap()
+            .to_string(),
+        data.clone()
+            .lock()
+            .unwrap()
+            .api_key
+            .lock()
+            .unwrap()
+            .to_vec(),
+    ) {
         "Hello Astronaut!\n".to_string()
     } else {
         "invalid api key\n".to_string()
     }
 }
-
 
 pub struct AppState {
     api_key: Mutex<Vec<String>>,
@@ -40,7 +52,7 @@ impl AppState {
     pub fn new(keys: Vec<String>, db_pool: Pool<MySql>) -> AppState {
         AppState {
             api_key: Mutex::new(keys),
-            db_pool: Mutex::new(db_pool)
+            db_pool: Mutex::new(db_pool),
         }
     }
 }
@@ -55,14 +67,19 @@ async fn main() -> std::io::Result<()> {
         .try_deserialize::<HashMap<String, String>>()
         .expect("unable to deserialize settings");
 
-    let database_url = settings_map.get("database_url").expect("could not get database_url from settings");
+    let database_url = settings_map
+        .get("database_url")
+        .expect("could not get database_url from settings");
 
     // database connection
     let db_pool = MySqlPool::connect(database_url)
         .await
         .expect("unable to connect to database");
 
-    let state = Data::new(Mutex::new(AppState::new(load_keys_from_file(), db_pool.clone())));
+    let state = Data::new(Mutex::new(AppState::new(
+        load_keys_from_file(),
+        db_pool.clone(),
+    )));
 
     HttpServer::new(move || {
         App::new()

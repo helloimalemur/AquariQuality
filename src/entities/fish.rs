@@ -1,10 +1,10 @@
-use std::sync::Mutex;
-use actix_web::HttpRequest;
-use actix_web::web::Data;
-use sqlx::{MySql, Pool};
 use crate::api_keys::is_key_valid;
-use crate::AppState;
 use crate::entities::parameter::Parameter;
+use crate::AppState;
+use actix_web::web::Data;
+use actix_web::HttpRequest;
+use sqlx::{MySql, Pool};
+use std::sync::Mutex;
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct Fish {
@@ -13,7 +13,7 @@ pub struct Fish {
     fish_id: i64,
     name: String,
     species: String,
-    qty: i64
+    qty: i64,
 }
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
@@ -22,7 +22,7 @@ pub struct FishRequest {
     tank_id: i64,
     name: String,
     species: String,
-    qty: i64
+    qty: i64,
 }
 
 // CREATE TABLE `fish` (
@@ -42,7 +42,15 @@ pub async fn create_fish_route(
 ) -> String {
     // verify api_key
     if req.headers().get("x-api-key").is_some() {
-        if is_key_valid(req.headers().get("x-api-key").unwrap().to_str().unwrap().to_string(), data.lock().unwrap().api_key.lock().unwrap().to_vec()) {
+        if is_key_valid(
+            req.headers()
+                .get("x-api-key")
+                .unwrap()
+                .to_str()
+                .unwrap()
+                .to_string(),
+            data.lock().unwrap().api_key.lock().unwrap().to_vec(),
+        ) {
             "ok\n".to_string()
         } else {
             "invalid api key\n".to_string()
@@ -61,7 +69,15 @@ pub async fn delete_fish_route(
 ) -> String {
     // verify api_key
     if req.headers().get("x-api-key").is_some() {
-        if is_key_valid(req.headers().get("x-api-key").unwrap().to_str().unwrap().to_string(), data.lock().unwrap().api_key.lock().unwrap().to_vec()) {
+        if is_key_valid(
+            req.headers()
+                .get("x-api-key")
+                .unwrap()
+                .to_str()
+                .unwrap()
+                .to_string(),
+            data.lock().unwrap().api_key.lock().unwrap().to_vec(),
+        ) {
             "ok\n".to_string()
         } else {
             "invalid api key\n".to_string()
@@ -80,7 +96,15 @@ pub async fn modify_fish_route(
 ) -> String {
     // verify api_key
     if req.headers().get("x-api-key").is_some() {
-        if is_key_valid(req.headers().get("x-api-key").unwrap().to_str().unwrap().to_string(), data.lock().unwrap().api_key.lock().unwrap().to_vec()) {
+        if is_key_valid(
+            req.headers()
+                .get("x-api-key")
+                .unwrap()
+                .to_str()
+                .unwrap()
+                .to_string(),
+            data.lock().unwrap().api_key.lock().unwrap().to_vec(),
+        ) {
             "ok\n".to_string()
         } else {
             "invalid api key\n".to_string()

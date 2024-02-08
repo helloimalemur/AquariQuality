@@ -1,11 +1,11 @@
+use crate::AppState;
+use actix_web::web::Data;
+use actix_web::{web, HttpRequest};
+use rand::Rng;
 use std::fs;
 use std::fs::OpenOptions;
 use std::io::{BufRead, Write};
 use std::sync::Mutex;
-use actix_web::{HttpRequest, web};
-use actix_web::web::Data;
-use rand::Rng;
-use crate::AppState;
 
 pub async fn create_api_key(
     // name: web::Path<String>,
@@ -15,10 +15,25 @@ pub async fn create_api_key(
     // verify api_key
 
     if req.headers().get("x-api-key").is_some() {
-        if is_key_valid(req.headers().get("x-api-key").unwrap().to_str().unwrap().to_string(), data.lock().unwrap().api_key.lock().unwrap().to_vec()) {
+        if is_key_valid(
+            req.headers()
+                .get("x-api-key")
+                .unwrap()
+                .to_str()
+                .unwrap()
+                .to_string(),
+            data.lock().unwrap().api_key.lock().unwrap().to_vec(),
+        ) {
             let mut rng = rand::thread_rng();
             let new_key: u64 = rng.gen(); // generates a new api-key
-            data.lock().as_mut().unwrap().api_key.lock().as_mut().unwrap().push(new_key.to_string());
+            data.lock()
+                .as_mut()
+                .unwrap()
+                .api_key
+                .lock()
+                .as_mut()
+                .unwrap()
+                .push(new_key.to_string());
             add_api_key_to_file(new_key.to_string());
             new_key.to_string()
         } else {
@@ -36,7 +51,15 @@ pub async fn delete_api_key(
 ) -> String {
     // verify api_key
     if req.headers().get("x-api-key").is_some() {
-        if is_key_valid(req.headers().get("x-api-key").unwrap().to_str().unwrap().to_string(), data.lock().unwrap().api_key.lock().unwrap().to_vec()) {
+        if is_key_valid(
+            req.headers()
+                .get("x-api-key")
+                .unwrap()
+                .to_str()
+                .unwrap()
+                .to_string(),
+            data.lock().unwrap().api_key.lock().unwrap().to_vec(),
+        ) {
             remove_api_key_from_file(key.to_string());
             reload_state(&data.lock().unwrap().api_key, load_keys_from_file());
             "ok".to_string()
@@ -91,7 +114,7 @@ fn remove_api_key_from_file(del_key: String) {
     }
     // remove key
     let mut rewrite_keys: Vec<String> = vec![];
-    for (i,u) in keys.iter().enumerate() {
+    for (i, u) in keys.iter().enumerate() {
         if !(*u == del_key) {
             rewrite_keys.push(u.to_string())
         }
