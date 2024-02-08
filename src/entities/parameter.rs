@@ -6,7 +6,7 @@ use crate::api_keys::is_key_valid;
 use crate::AppState;
 use crate::entities::tank::Tank;
 
-#[derive(Clone, Debug, Ord, PartialOrd, Eq, PartialEq)]
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct Parameter {
     user_id: i64,
     ph: i64,

@@ -6,7 +6,7 @@ use crate::api_keys::is_key_valid;
 use crate::AppState;
 use crate::entities::fish::Fish;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct Tank {
     user_id: i64,
     name: String,
