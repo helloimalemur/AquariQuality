@@ -18,3 +18,39 @@ mariadb -h "$DOCKER_MARIADB_DBHOST" -uroot -p"$DOCKER_MARIADB_DBHOSTPW" -e "GRAN
 mariadb -h "$DOCKER_MARIADB_DBHOST" -uroot -p"$DOCKER_MARIADB_DBHOSTPW" -e "FLUSH PRIVILEGES;";
 echo "connect with: mariadb -h $DOCKER_MARIADB_DBHOST -uroot -p$DOCKER_MARIADB_DBHOSTPW";
 ```
+
+
+
+```sql
+CREATE TABLE `user` (
+    `userid` INT NOT NULL,
+    `name` VARCHAR(255) NOT NULL,
+    `email` VARCHAR(255) NOT NULL,
+    PRIMARY KEY (`userid`)
+) ENGINE=InnoDB;
+```
+
+```sql
+CREATE TABLE `tank` (
+    `userid` INT NOT NULL,
+    `tankid` INT NOT NULL,
+    `name` VARCHAR(255) NOT NULL,
+    `size_gallons` VARCHAR(255) NOT NULL,
+    `height` INT,
+    `length` INT,
+    `width` INT,
+    `volume` INT,
+    `weight` INT,
+    PRIMARY KEY (`userid`)
+) ENGINE=InnoDB;
+```
+
+```sql
+CREATE TABLE `parameter` (
+    `userid` INT NOT NULL,
+    `tankid` INT NOT NULL,
+    `ph` INT,
+    `kh` INT,
+    PRIMARY KEY (`userid`)
+) ENGINE=InnoDB;
+```
