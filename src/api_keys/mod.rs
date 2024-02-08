@@ -18,7 +18,8 @@ pub async fn create_api_key(
             let mut rng = rand::thread_rng();
             let new_key: u64 = rng.gen(); // generates a new api-key
             add_api_key_to_file(new_key.to_string());
-            reload_state(data, load_keys_from_file());
+            reload_state(&data.lock().unwrap().api_key, load_keys_from_file());
+            // println!("{}", data.lock().unwrap().api_key.lock().unwrap().last().unwrap());
             new_key.to_string()
         } else {
             "invalid api key\n".to_string()
@@ -37,7 +38,7 @@ pub async fn delete_api_key(
     if req.headers().get("x-api-key").is_some() {
         if is_key_valid(req.headers().get("x-api-key").unwrap().to_str().unwrap().to_string(), data.lock().unwrap().api_key.lock().unwrap().to_vec()) {
             remove_api_key_from_file(key.to_string());
-            reload_state(data, load_keys_from_file());
+            reload_state(&data.lock().unwrap().api_key, load_keys_from_file());
             "ok".to_string()
         } else {
             "invalid api key\n".to_string()
@@ -47,12 +48,18 @@ pub async fn delete_api_key(
     }
 }
 
-fn reload_state(data: Data<Mutex<AppState>>, keys: Vec<String>) {
-    data.lock().unwrap().api_key.lock().unwrap().clear();
-    let new_vec: Vec<String> = vec![];
+fn reload_state(data: &Mutex<Vec<String>>, keys: Vec<String>) {
+    data.lock().unwrap().clear();
+    let mut new_vec: Vec<String> = vec![];
     for i in keys {
-        data.lock().unwrap().api_key.lock().unwrap().push(i)
+        new_vec.push(i)
     }
+
+    for i in new_vec {
+        data.lock().as_mut().unwrap().push(i)
+    }
+
+    println!("{}", &data.lock().unwrap().last().unwrap());
 }
 
 pub fn load_keys_from_file() -> Vec<String> {
