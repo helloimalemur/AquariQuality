@@ -15,6 +15,9 @@ use actix_web::web::{Data};
 use actix_web::{get, web, App, Either, Error, HttpRequest, HttpResponse, HttpServer, Responder};
 use config::Config;
 use sqlx::{MySql, MySqlPool, Pool};
+use crate::entities::parameter::{create_parameter_route, delete_parameter_route, modify_parameter_route};
+use crate::entities::tank::{create_tank_route, delete_tank_route, modify_tank_route};
+use crate::entities::user::{create_user_route, delete_user_route, modify_user_route};
 
 async fn root(
     data: Data<Mutex<AppState>>,
@@ -71,8 +74,18 @@ async fn main() -> std::io::Result<()> {
             .service(web::resource("/api/delete/{key}").to(delete_api_key))
             .service(web::resource("/api/delete/{key}/").to(delete_api_key))
             // src/entities/users
+            .service(web::resource("/api/create/user/").post(create_user_route))
+            .service(web::resource("/api/delete/user/").post(delete_user_route))
+            .service(web::resource("/api/modify/user/").post(modify_user_route))
             // src/entities/tanks
+            .service(web::resource("/api/create/tank/").post(create_tank_route))
+            .service(web::resource("/api/delete/tank/").post(delete_tank_route))
+            .service(web::resource("/api/modify/tank/").post(modify_tank_route))
             // src/entities/parameters
+            .service(web::resource("/api/create/parameter/").post(create_parameter_route))
+            .service(web::resource("/api/delete/parameter/").post(delete_parameter_route))
+            .service(web::resource("/api/modify/parameter/").post(modify_parameter_route))
+            //
             .service(web::resource("/").to(root))
             .default_service(web::to(default_handler))
     })
