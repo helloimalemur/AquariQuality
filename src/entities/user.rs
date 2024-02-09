@@ -11,10 +11,10 @@ use std::sync::{Mutex, MutexGuard};
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct User {
-    user_id: u16,
-    name: String,
-    email: String,
-    tanks: Vec<Tank>,
+    pub user_id: u16,
+    pub name: String,
+    pub email: String,
+    pub tanks: Vec<Tank>,
 }
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]

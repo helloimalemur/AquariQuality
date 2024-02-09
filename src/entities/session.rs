@@ -32,10 +32,31 @@ struct SessionRequest {
 // PRIMARY KEY (`sessionid`)
 // ) ENGINE=InnoDB;
 
-pub async fn create_session(user: User, data: Data<Mutex<AppState>>) {
+pub async fn create_session(user: User, data: Data<Mutex<AppState>>) -> bool {
     let mut app_state = data.lock();
     let mut db_pool = app_state.as_mut().unwrap().db_pool.lock().unwrap();
+
+    let new_session_id = generate_jwt_session_id(user.user_id).await;
+
+    if let Ok(query_result) = sqlx::query("INSERT INTO session (userid,name,email,sessionid) VALUES (?,?,?,?)")
+        .bind(user.user_id)
+        .bind(user.name)
+        .bind(user.email)
+        .bind(new_session_id)
+        .execute(&*db_pool)
+        .await {
+        true
+    } else {
+        false
+    }
 }
+
+async fn generate_jwt_session_id(user_id: u16) -> String {
+    let mut rand = rand::thread_rng();
+    let temp_new_session_id: i64 = rand.gen();
+    temp_new_session_id.to_string()
+}
+
 pub async fn delete_session(user: User, data: Data<Mutex<AppState>>) {
     let mut app_state = data.lock();
     let mut db_pool = app_state.as_mut().unwrap().db_pool.lock().unwrap();
