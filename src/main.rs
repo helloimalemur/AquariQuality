@@ -20,7 +20,7 @@ use config::Config;
 use sqlx::{MySql, MySqlPool, Pool};
 use std::collections::HashMap;
 use std::sync::Mutex;
-use crate::entities::session::login_user_route;
+use crate::entities::session::{login_user_route, logout_user_route};
 
 async fn root(data: Data<Mutex<AppState>>, req: HttpRequest) -> String {
     if is_key_valid(
@@ -88,7 +88,7 @@ async fn main() -> std::io::Result<()> {
             .wrap(api_key::ApiKey::new("".to_string()))
             // login/logout
             .service(web::resource("/login/").post(login_user_route))
-            // .service(web::resource("/logout/").post(logout_user_route))
+            .service(web::resource("/logout/").post(logout_user_route))
             // src/api_keys
             .service(web::resource("/api/create/").post(create_api_key))
             .service(web::resource("/api/delete/").post(delete_api_key))

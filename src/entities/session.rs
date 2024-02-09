@@ -158,3 +158,66 @@ pub async fn check_if_session_exists(user: User, data: Data<Mutex<AppState>>) {
     let mut db_pool = app_state.as_mut().unwrap().db_pool.lock().unwrap();
 
 }
+
+pub async fn logout_user_route(
+    // name: web::Path<String>,
+    mut payload: web::Payload,
+    data: Data<Mutex<AppState>>,
+    req: HttpRequest,
+) -> String {
+    const MAX_SIZE: usize = 262_144; // max payload size is 256k
+    // verify api_key
+    if req.headers().get("x-api-key").is_some() {
+        if is_key_valid(
+            req.headers()
+                .get("x-api-key")
+                .unwrap()
+                .to_str()
+                .unwrap()
+                .to_string(),
+            data.lock().unwrap().api_key.lock().unwrap().to_vec(),
+        ) {
+            let mut body = web::BytesMut::new();
+
+            while let Some(chunk) = payload.next().await {
+                let chunk = chunk.unwrap();
+                // limit max size of in-memory payload
+                if (body.len() + chunk.len()) > MAX_SIZE {
+                    return ErrorBadRequest("overflow").to_string();
+                }
+                body.extend_from_slice(&chunk);
+            }
+
+            // body is loaded, now we can deserialize serde-json
+            if let Ok(obj) = serde_json::from_slice::<LoginRequest>(&body) {
+
+                let login_req = obj.clone();
+                let login_request = LoginRequest {
+                    email: obj.email,
+                    password: obj.password,
+                };
+
+                println!("{:#?}", login_request.clone());
+                let user_exists = crate::entities::user::check_user_exist(login_req.email, data.clone()).await;
+
+                if user_exists {
+                    // process login
+
+                    create_session(login_request, data.clone()).await;
+
+                    "user login successful\n".to_string()
+                } else if !user_exists {
+                    "user does not exist\n".to_string()
+                } else {
+                    "error logging in\n".to_string()
+                }
+            } else {
+                "error logging in\n".to_string()
+            }
+        } else {
+            "invalid api key\n".to_string()
+        }
+    } else {
+        "invalid api key\n".to_string()
+    }
+}
