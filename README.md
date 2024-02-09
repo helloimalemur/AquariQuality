@@ -19,7 +19,10 @@ mariadb -h "$DOCKER_MARIADB_DBHOST" -uroot -p"$DOCKER_MARIADB_DBHOSTPW" -e "FLUS
 echo "connect with: mariadb -h $DOCKER_MARIADB_DBHOST -uroot -p$DOCKER_MARIADB_DBHOSTPW";
 ```
 
-
+```sql
+CREATE DATABASE aquariquality;
+USE aquariquality;
+```
 
 ```sql
 CREATE TABLE `user` (
