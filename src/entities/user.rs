@@ -149,17 +149,16 @@ pub async fn delete_user_route(
                 .to_string(),
             data.lock().unwrap().api_key.lock().unwrap().to_vec(),
         ) {
+            println!("{:?}", "a");
             let mut body = web::BytesMut::new();
             while let Some(chunk) = payload.next().await {
                 let chunk = chunk.unwrap();
                 if (body.len() + chunk.len()) > MAX_SIZE {
                     return "request too large".to_string()
-                } else {
-                    body.extend_from_slice(&chunk);
                 }
+                body.extend_from_slice(&chunk);
             }
 
-            println!("{:?}", body);
 
             if let Ok(user) = serde_json::from_slice::<UserRequest>(&body) {
                 if check_user_exist(user.clone(), data.clone()).await {
