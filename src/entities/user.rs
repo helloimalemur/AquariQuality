@@ -159,6 +159,8 @@ pub async fn delete_user_route(
                 }
             }
 
+            println!("{:?}", body);
+
             if let Ok(user) = serde_json::from_slice::<UserRequest>(&body) {
                 if check_user_exist(user.clone(), data.clone()).await {
                     if delete_user(user, data).await {
