@@ -149,7 +149,6 @@ pub async fn delete_user_route(
                 .to_string(),
             data.lock().unwrap().api_key.lock().unwrap().to_vec(),
         ) {
-            println!("{:?}", "a");
             let mut body = web::BytesMut::new();
             while let Some(chunk) = payload.next().await {
                 let chunk = chunk.unwrap();

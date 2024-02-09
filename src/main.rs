@@ -90,17 +90,17 @@ async fn main() -> std::io::Result<()> {
             .service(web::resource("/api/delete/{key}").to(delete_api_key))
             .service(web::resource("/api/delete/{key}/").to(delete_api_key))
             // src/entities/users
-            .service(web::resource("/api/create/user/").post(create_user_route))
-            .service(web::resource("/api/delete/user/").post(delete_user_route))
-            .service(web::resource("/api/modify/user/").post(modify_user_route))
-            // src/entities/tanks
-            .service(web::resource("/api/create/tank/").post(create_tank_route))
-            .service(web::resource("/api/delete/tank/").post(delete_tank_route))
-            .service(web::resource("/api/modify/tank/").post(modify_tank_route))
-            // src/entities/parameters
-            .service(web::resource("/api/create/parameter/").post(create_parameter_route))
-            .service(web::resource("/api/delete/parameter/").post(delete_parameter_route))
-            .service(web::resource("/api/modify/parameter/").post(modify_parameter_route))
+            .service(web::resource("/user/create/").post(create_user_route))
+            .service(web::resource("/user/delete/").post(delete_user_route))
+            // .service(web::resource("/api/modify/user/").post(modify_user_route))
+            // // src/entities/tanks
+            // .service(web::resource("/api/create/tank/").post(create_tank_route))
+            // .service(web::resource("/api/delete/tank/").post(delete_tank_route))
+            // .service(web::resource("/api/modify/tank/").post(modify_tank_route))
+            // // src/entities/parameters
+            // .service(web::resource("/api/create/parameter/").post(create_parameter_route))
+            // .service(web::resource("/api/delete/parameter/").post(delete_parameter_route))
+            // .service(web::resource("/api/modify/parameter/").post(modify_parameter_route))
             //
             .service(web::resource("/").to(root))
             .default_service(web::to(default_handler))
