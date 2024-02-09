@@ -98,7 +98,7 @@ pub async fn create_session(user_login_request: LoginRequest, data: Data<Mutex<A
     let mut app_state = data.lock();
     let mut db_pool = app_state.as_mut().unwrap().db_pool.lock().unwrap();
 
-    let user: User = get_user_from_login_request(user_login_request, data).await;
+    let user: User = get_user_from_login_request(user_login_request, data.clone()).await;
 
     let new_session_id = generate_jwt_session_id(user.user_id).await;
 
