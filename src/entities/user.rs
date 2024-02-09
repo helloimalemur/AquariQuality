@@ -2,7 +2,7 @@ use crate::api_keys::is_key_valid;
 use crate::entities::tank::Tank;
 use crate::AppState;
 use actix_web::error::ErrorBadRequest;
-use actix_web::web::Data;
+use actix_web::web::{Data, Payload};
 use actix_web::{error, web, HttpRequest, HttpResponse};
 use futures_util::StreamExt;
 use rand::{random, Rng};
@@ -147,9 +147,11 @@ pub async fn create_user(user: User, data: Data<Mutex<AppState>>) {
 
 pub async fn delete_user_route(
     // name: web::Path<String>,
+    mut payload: Payload,
     data: Data<Mutex<AppState>>,
     req: HttpRequest,
 ) -> String {
+    const MAX_SIZE: usize = 262_144; // max payload size is 256k
     // verify api_key
     if req.headers().get("x-api-key").is_some() {
         if is_key_valid(
@@ -161,7 +163,25 @@ pub async fn delete_user_route(
                 .to_string(),
             data.lock().unwrap().api_key.lock().unwrap().to_vec(),
         ) {
-            "ok\n".to_string()
+            let mut body = web::BytesMut::new();
+            while let Some(chunk) = payload.next().await {
+                let chunk = chunk.unwrap();
+                if (body.len() + chunk.len()) > MAX_SIZE {
+                    return "request too large".to_string()
+                } else {
+                    body.extend_from_slice(&chunk);
+                }
+            }
+
+            if let Ok(user) = serde_json::from_slice::<UserRequest>(&body) {
+                if delete_user(user, data).await {
+                    "user deleted".to_string()
+                } else {
+                    "error deleting user".to_string()
+                }
+            } else {
+                "error deleting user".to_string()
+            }
         } else {
             "invalid api key\n".to_string()
         }
@@ -170,7 +190,19 @@ pub async fn delete_user_route(
     }
 }
 
-pub fn delete_user(user: User, db_pool: Pool<MySql>) {}
+pub async fn delete_user(user: UserRequest, data: Data<Mutex<AppState>>) -> bool {
+    let mut app_state = data.lock();
+    let mut db_pool = app_state.as_mut().unwrap().db_pool.lock().unwrap();
+
+    if let Ok(query_result) = sqlx::query("DELETE FROM user WHERE email LIKE (?)")
+        .bind(user.email)
+        .execute(&*db_pool)
+        .await {
+        true
+    } else {
+        false
+    }
+}
 
 pub async fn modify_user_route(
     // name: web::Path<String>,
