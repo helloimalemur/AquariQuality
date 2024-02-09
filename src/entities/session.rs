@@ -32,6 +32,17 @@ struct SessionRequest {
 // PRIMARY KEY (`sessionid`)
 // ) ENGINE=InnoDB;
 
-pub async fn create_session(user: User, db_pool: MutexGuard<Pool<MySql>>) {}
-pub async fn delete_session(user: User, db_pool: MutexGuard<Pool<MySql>>) {}
-pub async fn check_if_session_exists(user: User, db_pool: MutexGuard<Pool<MySql>>) {}
+pub async fn create_session(user: User, data: Data<Mutex<AppState>>) {
+    let mut app_state = data.lock();
+    let mut db_pool = app_state.as_mut().unwrap().db_pool.lock().unwrap();
+}
+pub async fn delete_session(user: User, data: Data<Mutex<AppState>>) {
+    let mut app_state = data.lock();
+    let mut db_pool = app_state.as_mut().unwrap().db_pool.lock().unwrap();
+
+}
+pub async fn check_if_session_exists(user: User, data: Data<Mutex<AppState>>) {
+    let mut app_state = data.lock();
+    let mut db_pool = app_state.as_mut().unwrap().db_pool.lock().unwrap();
+
+}
