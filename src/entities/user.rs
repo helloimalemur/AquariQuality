@@ -77,7 +77,7 @@ pub async fn create_user_route(
                 };
 
                 println!("{:#?}", new_user.clone());
-                let user_exists = check_user_exist(user_req, data.clone()).await;
+                let user_exists = check_user_exist(user_req.email, data.clone()).await;
                 if !user_exists {
                     create_user(new_user.clone(), data.clone()).await;
                     "user created\n".to_string()
@@ -97,14 +97,14 @@ pub async fn create_user_route(
     }
 }
 
-pub async fn check_user_exist(user: UserRequest, mut data: Data<Mutex<AppState>>) -> bool {
+pub async fn check_user_exist(user_email: String, mut data: Data<Mutex<AppState>>) -> bool {
     let mut user_exists: bool = false;
     let mut app_state = data.lock();
     let mut db_pool = app_state.as_mut().unwrap().db_pool.lock().unwrap();
 
     let mut query_result_string = String::new();
     if let Ok(query_result_2) = sqlx::query("SELECT email FROM user WHERE email LIKE (?)")
-        .bind(user.email)
+        .bind(user_email)
         .fetch_one(&*db_pool)
         .await
     {
@@ -165,7 +165,7 @@ pub async fn delete_user_route(
 
 
             if let Ok(user) = serde_json::from_slice::<UserRequest>(&body) {
-                if check_user_exist(user.clone(), data.clone()).await {
+                if check_user_exist(user.clone().email, data.clone()).await {
                     if delete_user(user, data).await {
                         "user deleted".to_string()
                     } else {

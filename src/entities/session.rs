@@ -1,5 +1,5 @@
 use crate::api_keys::is_key_valid;
-use crate::entities::user::{create_user, User};
+use crate::entities::user::{create_user, User, UserRequest};
 use crate::AppState;
 use actix_web::error::ErrorBadRequest;
 use actix_web::web::{Data, Payload};
@@ -63,30 +63,31 @@ pub async fn login_user_route(
             }
 
             // body is loaded, now we can deserialize serde-json
-            if let Ok(obj) = serde_json::from_slice::<crate::entities::user::UserRequest>(&body) {
-                let mut rand = rand::thread_rng();
-                let new_user_id: u16 = rand.gen();
-                let user_req = obj.clone();
-                let new_user = User {
-                    user_id: new_user_id,
+            if let Ok(obj) = serde_json::from_slice::<LoginRequest>(&body) {
+
+                let login_req = obj.clone();
+                let new_user = UserRequest {
                     name: obj.name,
                     email: obj.email,
                     password: obj.password,
-                    tanks: vec![],
                 };
 
                 println!("{:#?}", new_user.clone());
-                let user_exists = crate::entities::user::check_user_exist(user_req, data.clone()).await;
-                if !user_exists {
-                    create_user(new_user.clone(), data.clone()).await;
-                    "user created\n".to_string()
-                } else if user_exists {
-                    "user exists\n".to_string()
+                let user_exists = crate::entities::user::check_user_exist(login_req.email, data.clone()).await;
+
+                if user_exists {
+                    // process login
+
+                    // create_user(new_user.clone(), data.clone()).await;
+
+                    "user login successful\n".to_string()
+                } else if !user_exists {
+                    "user does not exist\n".to_string()
                 } else {
-                    "error creating user\n".to_string()
+                    "error logging in\n".to_string()
                 }
             } else {
-                "error creating user\n".to_string()
+                "error logging in\n".to_string()
             }
         } else {
             "invalid api key\n".to_string()
