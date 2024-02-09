@@ -97,7 +97,7 @@ pub async fn create_user_route(
     }
 }
 
-pub(crate) async fn check_user_exist(user: UserRequest, mut data: Data<Mutex<AppState>>) -> bool {
+pub async fn check_user_exist(user: UserRequest, mut data: Data<Mutex<AppState>>) -> bool {
     let mut user_exists: bool = false;
     let mut app_state = data.lock();
     let mut db_pool = app_state.as_mut().unwrap().db_pool.lock().unwrap();
@@ -123,10 +123,11 @@ pub async fn create_user(user: User, data: Data<Mutex<AppState>>) {
     let is_closed = db_pool.is_closed();
     println!("Database connected: {}", !is_closed);
 
-    let query_result = sqlx::query("INSERT INTO user (userid, name, email) VALUES (?,?,?)")
+    let query_result = sqlx::query("INSERT INTO user (userid, name, email, password) VALUES (?,?,?,?)")
         .bind(user.user_id)
         .bind(user.name)
         .bind(user.email)
+        .bind(user.password)
         .execute(&*db_pool)
         .await
         .unwrap();
