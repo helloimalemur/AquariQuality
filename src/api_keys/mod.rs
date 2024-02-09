@@ -1,19 +1,29 @@
 use crate::AppState;
-use actix_web::web::Data;
+use actix_web::web::{BytesMut, Data};
 use actix_web::{web, HttpRequest};
 use rand::Rng;
 use std::fs;
 use std::fs::OpenOptions;
 use std::io::{BufRead, Write};
 use std::sync::Mutex;
+use actix_web::dev::Payload;
+use futures_util::StreamExt;
+use crate::middleware::api_key::ApiKey;
 
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+pub struct ApiKeyRequest {
+    api_key: String,
+}
+
+// curl -XPOST -H'x-api-key: 12790066417744034365' localhost:8080/api/create/
 pub async fn create_api_key(
     // name: web::Path<String>,
+    mut payload: web::Payload,
     data: Data<Mutex<AppState>>,
     req: HttpRequest,
 ) -> String {
     // verify api_key
-
+    const MAX_SIZE: usize = 262_144; // max payload size is 256k
     if req.headers().get("x-api-key").is_some() {
         if is_key_valid(
             req.headers()
@@ -24,6 +34,15 @@ pub async fn create_api_key(
                 .to_string(),
             data.lock().unwrap().api_key.lock().unwrap().to_vec(),
         ) {
+            let mut body = BytesMut::new();
+            while let Some(chunk) = payload.next().await {
+                let chunk = chunk.unwrap();
+                if (body.len() + chunk.len()) > MAX_SIZE {
+                    return "request too large".to_string()
+                }
+                body.extend_from_slice(&chunk);
+            }
+
             let mut rng = rand::thread_rng();
             let new_key: u64 = rng.gen(); // generates a new api-key
             data.lock()
@@ -35,7 +54,8 @@ pub async fn create_api_key(
                 .unwrap()
                 .push(new_key.to_string());
             add_api_key_to_file(new_key.to_string());
-            new_key.to_string()
+            let api_request = ApiKeyRequest { api_key: new_key.to_string() };
+            serde_json::to_string(&api_request).unwrap()
         } else {
             "invalid api key\n".to_string()
         }
@@ -44,8 +64,10 @@ pub async fn create_api_key(
     }
 }
 
+// curl -XPOST -H'x-api-key: 12790066417744034365' localhost:8080/api/delete/ -d'{"api_key":"9860738100897034443"}'
 pub async fn delete_api_key(
-    key: web::Path<String>,
+    // key: web::Path<String>,
+    mut payload: web::Payload,
     data: Data<Mutex<AppState>>,
     req: HttpRequest,
 ) -> String {
@@ -60,9 +82,20 @@ pub async fn delete_api_key(
                 .to_string(),
             data.lock().unwrap().api_key.lock().unwrap().to_vec(),
         ) {
-            remove_api_key_from_file(key.to_string());
+            const MAX_SIZE: usize = 262_144; // max payload size is 256k
+            let mut body = BytesMut::new();
+            while let Some(chunck) = payload.next().await {
+                let chunk = chunck.unwrap();
+                if (chunk.len() + body.len()) > MAX_SIZE {
+                    return "request too large".to_string()
+                }
+                body.extend_from_slice(&chunk);
+            }
+            let key_request = serde_json::from_slice::<ApiKeyRequest>(&body).unwrap();
+
+            remove_api_key_from_file(key_request.api_key);
             reload_state(&data.lock().unwrap().api_key, load_keys_from_file());
-            "ok".to_string()
+            "api key deleted".to_string()
         } else {
             "invalid api key\n".to_string()
         }
