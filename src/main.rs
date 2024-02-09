@@ -88,7 +88,7 @@ async fn main() -> std::io::Result<()> {
             .wrap(api_key::ApiKey::new("".to_string()))
             // login/logout
             .service(web::resource("/login/").post(login_user_route))
-            .service(web::resource("/logout/").post(logout_user_route))
+            .service(web::resource("/logout/").post(logout_user_route))// todo
             // src/api_keys
             .service(web::resource("/api/create/").post(create_api_key))
             .service(web::resource("/api/delete/").post(delete_api_key))
