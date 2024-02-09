@@ -14,19 +14,22 @@ pub struct User {
     pub user_id: u16,
     pub name: String,
     pub email: String,
+    pub password: String,
     pub tanks: Vec<Tank>,
 }
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
-struct UserRequest {
-    name: String,
-    email: String,
+pub(crate) struct UserRequest {
+    pub name: String,
+    pub email: String,
+    pub password: String,
 }
 
 // CREATE TABLE `user` (
 // `userid` INT NOT NULL,
 // `name` VARCHAR(255) NOT NULL,
 // `email` VARCHAR(255) NOT NULL,
+// `password` VARCHAR(255) NOT NULL,
 // PRIMARY KEY (`userid`)
 // ) ENGINE=InnoDB;
 
@@ -69,6 +72,7 @@ pub async fn create_user_route(
                     user_id: new_user_id,
                     name: obj.name,
                     email: obj.email,
+                    password: obj.password,
                     tanks: vec![],
                 };
 
@@ -93,7 +97,7 @@ pub async fn create_user_route(
     }
 }
 
-async fn check_user_exist(user: UserRequest, mut data: Data<Mutex<AppState>>) -> bool {
+pub(crate) async fn check_user_exist(user: UserRequest, mut data: Data<Mutex<AppState>>) -> bool {
     let mut user_exists: bool = false;
     let mut app_state = data.lock();
     let mut db_pool = app_state.as_mut().unwrap().db_pool.lock().unwrap();
