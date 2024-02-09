@@ -1,5 +1,5 @@
 use crate::api_keys::is_key_valid;
-use crate::entities::tank::Tank;
+use crate::entities::user::User;
 use crate::AppState;
 use actix_web::error::ErrorBadRequest;
 use actix_web::web::{Data, Payload};
@@ -32,6 +32,6 @@ struct SessionRequest {
 // PRIMARY KEY (`sessionid`)
 // ) ENGINE=InnoDB;
 
-pub async fn create_session() {}
-pub async fn delete_session() {}
-pub async fn check_if_session_exists() {}
+pub async fn create_session(user: User, db_pool: MutexGuard<Pool<MySql>>) {}
+pub async fn delete_session(user: User, db_pool: MutexGuard<Pool<MySql>>) {}
+pub async fn check_if_session_exists(user: User, db_pool: MutexGuard<Pool<MySql>>) {}

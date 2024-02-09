@@ -10,7 +10,7 @@ use sqlx::{MySql, Pool, Row};
 use std::sync::{Mutex, MutexGuard};
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
-struct User {
+pub struct User {
     user_id: u16,
     name: String,
     email: String,
