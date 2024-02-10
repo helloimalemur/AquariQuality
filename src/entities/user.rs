@@ -33,7 +33,7 @@ pub(crate) struct UserRequest {
 // PRIMARY KEY (`userid`)
 // ) ENGINE=InnoDB;
 
-// curl -XPOST -H'x-api-key: 12790066417744034365' localhost:8080/api/create/user/ -d '{"name":"johnny","email":"johhny@mail.com"}'
+// curl -XPOST -H'x-api-key: omganotherone' localhost:8080/user/create/ -d '{"name":"johnny","email":"johhny@mail.com","password":"password"}'
 pub async fn create_user_route(
     // name: web::Path<String>,
     mut payload: web::Payload,

@@ -1,5 +1,5 @@
 use crate::api_keys::is_key_valid;
-use crate::entities::user::{create_user, User, UserRequest};
+use crate::entities::user::{check_user_exist, create_user, User, UserRequest};
 use crate::AppState;
 use actix_web::error::ErrorBadRequest;
 use actix_web::web::{Data, Payload};
@@ -32,6 +32,7 @@ struct LoginRequest {
 // PRIMARY KEY (`sessionid`)
 // ) ENGINE=InnoDB;
 
+// curl -XPOST -H'x-api-key: omganotherone' localhost:8080/login/ -d '{"email":"johhny@mail.com","password":"password"}'
 pub async fn login_user_route(
     // name: web::Path<String>,
     mut payload: web::Payload,
@@ -71,11 +72,12 @@ pub async fn login_user_route(
 
                 println!("{:#?}", login_request.clone());
                 let user_exists =
-                    crate::entities::user::check_user_exist(login_req.email, data.clone()).await;
+                    check_user_exist(login_req.email, data.clone()).await;
 
                 if user_exists {
                     // process login and return session_id
-                    create_session(login_request, data.clone()).await
+                    let session_id = create_session(login_request, data.clone()).await; // todo
+                    session_id.to_string()
                 } else if !user_exists {
                     "user does not exist\n".to_string()
                 } else {
