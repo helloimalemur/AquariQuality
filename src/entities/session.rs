@@ -30,6 +30,12 @@ struct LoginRequest {
     password: String,
 }
 
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+struct LogoutRequest {
+    email: String,
+    session_id: String,
+}
+
 // CREATE TABLE `session` (
 // `userid` INT NOT NULL,
 // `name` VARCHAR(255) NOT NULL,
@@ -132,7 +138,7 @@ pub async fn create_session(
         let new_session_id = generate_jwt_session_id(user.user_id).await;
 
         // delete any old sessions prior to creating new session
-        delete_session(user.clone(), db_pool.clone()).await;
+        delete_session_by_userid(user.user_id, db_pool.clone()).await;
 
         if let Ok(query_result) =
             sqlx::query("INSERT INTO session (userid,name,email,sessionid) VALUES (?,?,?,?)")
@@ -188,30 +194,31 @@ pub async fn logout_user_route(
             }
 
             // body is loaded, now we can deserialize serde-json
-            if let Ok(obj) = serde_json::from_slice::<LoginRequest>(&body) {
-                let login_req = obj.clone();
-                let login_request = LoginRequest {
-                    email: obj.email,
-                    password: obj.password,
+            if let Ok(obj) = serde_json::from_slice::<LogoutRequest>(&body) {
+                let logout_rq = obj.clone();
+                let logout_request = LogoutRequest {
+                    session_id: obj.session_id,
+                    email: obj.email
                 };
 
-                println!("{:#?}", login_request.clone());
+                println!("{:#?}", logout_request.clone());
                 let user_exists =
-                    crate::entities::user::check_user_exist(login_req.email, data.clone()).await;
+                    check_user_exist(logout_rq.email, data.clone()).await;
 
                 if user_exists {
                     // process login
+                    let mut app_state = data.lock();
+                    let db_pool = app_state.as_mut().unwrap().db_pool.lock().unwrap();
+                    delete_session_by_sessionid(logout_rq.session_id, db_pool.clone()).await;
 
-                    // delete_session(login_request, data.clone()).await;
-
-                    "user login successful\n".to_string()
+                    "user logout successful\n".to_string()
                 } else if !user_exists {
                     "user does not exist\n".to_string()
                 } else {
-                    "error logging in\n".to_string()
+                    "error logging out\n".to_string()
                 }
             } else {
-                "error logging in\n".to_string()
+                "error logging out\n".to_string()
             }
         } else {
             "invalid api key\n".to_string()
@@ -221,9 +228,23 @@ pub async fn logout_user_route(
     }
 }
 
-pub async fn delete_session(user: User, db_pool: Pool<MySql>) {
+pub async fn delete_session_by_userid(user_id: i16, db_pool: Pool<MySql>) {
     let query_result = sqlx::query("DELETE FROM session WHERE userid=(?)")
-        .bind(user.user_id)
+        .bind(user_id)
+        .execute(&db_pool)
+        .await;
+}
+
+pub async fn delete_session_by_email(email: String, db_pool: Pool<MySql>) {
+    let query_result = sqlx::query("DELETE FROM session WHERE email=(?)")
+        .bind(email)
+        .execute(&db_pool)
+        .await;
+}
+
+pub async fn delete_session_by_sessionid(session_id: String, db_pool: Pool<MySql>) {
+    let query_result = sqlx::query("DELETE FROM session WHERE sessionid=(?)")
+        .bind(session_id)
         .execute(&db_pool)
         .await;
 }
