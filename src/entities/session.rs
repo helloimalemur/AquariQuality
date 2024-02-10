@@ -1,3 +1,4 @@
+use std::net::ToSocketAddrs;
 use crate::api_keys::is_key_valid;
 use crate::entities::user::{create_user, User, UserRequest};
 use crate::AppState;
@@ -73,11 +74,8 @@ pub async fn login_user_route(
                     crate::entities::user::check_user_exist(login_req.email, data.clone()).await;
 
                 if user_exists {
-                    // process login
-
-                    create_session(login_request, data.clone()).await;
-
-                    "user login successful\n".to_string()
+                    // process login and return session_id
+                    create_session(login_request, data.clone()).await
                 } else if !user_exists {
                     "user does not exist\n".to_string()
                 } else {
@@ -94,7 +92,7 @@ pub async fn login_user_route(
     }
 }
 
-pub async fn create_session(user_login_request: LoginRequest, data: Data<Mutex<AppState>>) -> bool {
+pub async fn create_session(user_login_request: LoginRequest, data: Data<Mutex<AppState>>) -> String {
     let mut app_state = data.lock();
     let mut db_pool = app_state.as_mut().unwrap().db_pool.lock().unwrap();
 
@@ -111,9 +109,9 @@ pub async fn create_session(user_login_request: LoginRequest, data: Data<Mutex<A
             .execute(&*db_pool)
             .await
     {
-        true
+        new_session_id.to_string()
     } else {
-        false
+        "null".to_string()
     }
 }
 
@@ -152,7 +150,7 @@ async fn generate_jwt_session_id(user_id: u16) -> String {
     temp_new_session_id.to_string()
 }
 
-pub async fn delete_session(user: User, data: Data<Mutex<AppState>>) {
+pub async fn delete_session(user: LoginRequest, data: Data<Mutex<AppState>>) {
     let mut app_state = data.lock();
     let mut db_pool = app_state.as_mut().unwrap().db_pool.lock().unwrap();
 }
@@ -205,7 +203,7 @@ pub async fn logout_user_route(
                 if user_exists {
                     // process login
 
-                    create_session(login_request, data.clone()).await;
+                    delete_session(login_request, data.clone()).await;
 
                     "user login successful\n".to_string()
                 } else if !user_exists {
