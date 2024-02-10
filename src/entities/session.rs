@@ -70,11 +70,10 @@ pub async fn login_user_route(
                     email: obj.email,
                     password: obj.password,
                 };
-
-                println!("{:#?}", login_request.clone());
+                // println!("{:#?}", login_request.clone());
+                // verify user exists
                 let user_exists =
                     check_user_exist(login_req.email, data.clone()).await;
-
                 if user_exists {
                     // process login and return session_id
                     let session_id = create_session(login_request, data.clone()).await; // todo
@@ -102,13 +101,14 @@ pub async fn create_session(
     let mut app_state = data.lock();
     let mut db_pool = app_state.as_mut().unwrap().db_pool.lock().unwrap();
 
-    println!("{:#?}", !db_pool.is_closed());
-
+    // query user from db using login request
     if let Ok(user) = get_user_from_login_request(user_login_request, db_pool.clone()).await {
 
-        println!("{:#?}", user);
-
+        // create session token
         let new_session_id = generate_jwt_session_id(user.user_id).await;
+
+        // delete any old sessions prior to creating new session
+        delete_session(user.clone(), db_pool.clone()).await;
 
         if let Ok(query_result) =
             sqlx::query("INSERT INTO session (userid,name,email,sessionid) VALUES (?,?,?,?)")
@@ -157,9 +157,12 @@ async fn generate_jwt_session_id(user_id: i16) -> String {
     temp_new_session_id.to_string()
 }
 
-pub async fn delete_session(user: LoginRequest, data: Data<Mutex<AppState>>) {
-    let mut app_state = data.lock();
-    let mut db_pool = app_state.as_mut().unwrap().db_pool.lock().unwrap();
+pub async fn delete_session(user: User, db_pool: Pool<MySql>) {
+    let query_result =
+        sqlx::query("DELETE FROM session WHERE userid=(?)")
+            .bind(user.user_id)
+            .execute(&db_pool)
+            .await;
 }
 pub async fn check_if_session_exists(user: User, data: Data<Mutex<AppState>>) {
     let mut app_state = data.lock();
@@ -210,7 +213,7 @@ pub async fn logout_user_route(
                 if user_exists {
                     // process login
 
-                    delete_session(login_request, data.clone()).await;
+                    // delete_session(login_request, data.clone()).await;
 
                     "user login successful\n".to_string()
                 } else if !user_exists {
