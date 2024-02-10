@@ -1,14 +1,14 @@
+use crate::middleware::api_key::ApiKey;
 use crate::AppState;
+use actix_web::dev::Payload;
 use actix_web::web::{BytesMut, Data};
 use actix_web::{web, HttpRequest};
+use futures_util::StreamExt;
 use rand::Rng;
 use std::fs;
 use std::fs::OpenOptions;
 use std::io::{BufRead, Write};
 use std::sync::Mutex;
-use actix_web::dev::Payload;
-use futures_util::StreamExt;
-use crate::middleware::api_key::ApiKey;
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct ApiKeyRequest {
@@ -38,7 +38,7 @@ pub async fn create_api_key(
             while let Some(chunk) = payload.next().await {
                 let chunk = chunk.unwrap();
                 if (body.len() + chunk.len()) > MAX_SIZE {
-                    return "request too large".to_string()
+                    return "request too large".to_string();
                 }
                 body.extend_from_slice(&chunk);
             }
@@ -54,7 +54,9 @@ pub async fn create_api_key(
                 .unwrap()
                 .push(new_key.to_string());
             add_api_key_to_file(new_key.to_string());
-            let api_request = ApiKeyRequest { api_key: new_key.to_string() };
+            let api_request = ApiKeyRequest {
+                api_key: new_key.to_string(),
+            };
             serde_json::to_string(&api_request).unwrap()
         } else {
             "invalid api key\n".to_string()
@@ -87,7 +89,7 @@ pub async fn delete_api_key(
             while let Some(chunck) = payload.next().await {
                 let chunk = chunck.unwrap();
                 if (chunk.len() + body.len()) > MAX_SIZE {
-                    return "request too large".to_string()
+                    return "request too large".to_string();
                 }
                 body.extend_from_slice(&chunk);
             }

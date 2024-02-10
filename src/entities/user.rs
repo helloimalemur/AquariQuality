@@ -123,14 +123,15 @@ pub async fn create_user(user: User, data: Data<Mutex<AppState>>) {
     let is_closed = db_pool.is_closed();
     println!("Database connected: {}", !is_closed);
 
-    let query_result = sqlx::query("INSERT INTO user (userid, name, email, password) VALUES (?,?,?,?)")
-        .bind(user.user_id)
-        .bind(user.name)
-        .bind(user.email)
-        .bind(user.password)
-        .execute(&*db_pool)
-        .await
-        .unwrap();
+    let query_result =
+        sqlx::query("INSERT INTO user (userid, name, email, password) VALUES (?,?,?,?)")
+            .bind(user.user_id)
+            .bind(user.name)
+            .bind(user.email)
+            .bind(user.password)
+            .execute(&*db_pool)
+            .await
+            .unwrap();
 
     println!("{:#?}", query_result);
 }
@@ -143,7 +144,7 @@ pub async fn delete_user_route(
     req: HttpRequest,
 ) -> String {
     const MAX_SIZE: usize = 262_144; // max payload size is 256k
-    // verify api_key
+                                     // verify api_key
     if req.headers().get("x-api-key").is_some() {
         if is_key_valid(
             req.headers()
@@ -158,11 +159,10 @@ pub async fn delete_user_route(
             while let Some(chunk) = payload.next().await {
                 let chunk = chunk.unwrap();
                 if (body.len() + chunk.len()) > MAX_SIZE {
-                    return "request too large".to_string()
+                    return "request too large".to_string();
                 }
                 body.extend_from_slice(&chunk);
             }
-
 
             if let Ok(user) = serde_json::from_slice::<UserRequest>(&body) {
                 if check_user_exist(user.clone().email, data.clone()).await {
@@ -192,7 +192,8 @@ pub async fn delete_user(user: UserRequest, data: Data<Mutex<AppState>>) -> bool
     if let Ok(query_result) = sqlx::query("DELETE FROM user WHERE email LIKE (?)")
         .bind(user.email)
         .execute(&*db_pool)
-        .await {
+        .await
+    {
         true
     } else {
         false

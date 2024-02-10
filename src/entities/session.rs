@@ -14,7 +14,7 @@ struct Session {
     user_id: u16,
     name: String,
     email: String,
-    session_id: String
+    session_id: String,
 }
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
@@ -38,7 +38,7 @@ pub async fn login_user_route(
     req: HttpRequest,
 ) -> String {
     const MAX_SIZE: usize = 262_144; // max payload size is 256k
-    // verify api_key
+                                     // verify api_key
     if req.headers().get("x-api-key").is_some() {
         if is_key_valid(
             req.headers()
@@ -62,7 +62,6 @@ pub async fn login_user_route(
 
             // body is loaded, now we can deserialize serde-json
             if let Ok(obj) = serde_json::from_slice::<LoginRequest>(&body) {
-
                 let login_req = obj.clone();
                 let login_request = LoginRequest {
                     email: obj.email,
@@ -70,7 +69,8 @@ pub async fn login_user_route(
                 };
 
                 println!("{:#?}", login_request.clone());
-                let user_exists = crate::entities::user::check_user_exist(login_req.email, data.clone()).await;
+                let user_exists =
+                    crate::entities::user::check_user_exist(login_req.email, data.clone()).await;
 
                 if user_exists {
                     // process login
@@ -102,20 +102,25 @@ pub async fn create_session(user_login_request: LoginRequest, data: Data<Mutex<A
 
     let new_session_id = generate_jwt_session_id(user.user_id).await;
 
-    if let Ok(query_result) = sqlx::query("INSERT INTO session (userid,name,email,sessionid) VALUES (?,?,?,?)")
-        .bind(user.user_id)
-        .bind(user.name)
-        .bind(user.email)
-        .bind(new_session_id)
-        .execute(&*db_pool)
-        .await {
+    if let Ok(query_result) =
+        sqlx::query("INSERT INTO session (userid,name,email,sessionid) VALUES (?,?,?,?)")
+            .bind(user.user_id)
+            .bind(user.name)
+            .bind(user.email)
+            .bind(new_session_id)
+            .execute(&*db_pool)
+            .await
+    {
         true
     } else {
         false
     }
 }
 
-async fn get_user_from_login_request(user_login_request: LoginRequest, data: Data<Mutex<AppState>>) -> User {
+async fn get_user_from_login_request(
+    user_login_request: LoginRequest,
+    data: Data<Mutex<AppState>>,
+) -> User {
     let mut app_state = data.lock();
     let mut db_pool = app_state.as_mut().unwrap().db_pool.lock().unwrap();
     // let query_result =
@@ -137,7 +142,6 @@ async fn get_user_from_login_request(user_login_request: LoginRequest, data: Dat
         user.name = row.get("name");
         user.email = row.get("email");
         user.password = row.get("password");
-
     }
     user
 }
@@ -151,12 +155,10 @@ async fn generate_jwt_session_id(user_id: u16) -> String {
 pub async fn delete_session(user: User, data: Data<Mutex<AppState>>) {
     let mut app_state = data.lock();
     let mut db_pool = app_state.as_mut().unwrap().db_pool.lock().unwrap();
-
 }
 pub async fn check_if_session_exists(user: User, data: Data<Mutex<AppState>>) {
     let mut app_state = data.lock();
     let mut db_pool = app_state.as_mut().unwrap().db_pool.lock().unwrap();
-
 }
 
 pub async fn logout_user_route(
@@ -166,7 +168,7 @@ pub async fn logout_user_route(
     req: HttpRequest,
 ) -> String {
     const MAX_SIZE: usize = 262_144; // max payload size is 256k
-    // verify api_key
+                                     // verify api_key
     if req.headers().get("x-api-key").is_some() {
         if is_key_valid(
             req.headers()
@@ -190,7 +192,6 @@ pub async fn logout_user_route(
 
             // body is loaded, now we can deserialize serde-json
             if let Ok(obj) = serde_json::from_slice::<LoginRequest>(&body) {
-
                 let login_req = obj.clone();
                 let login_request = LoginRequest {
                     email: obj.email,
@@ -198,7 +199,8 @@ pub async fn logout_user_route(
                 };
 
                 println!("{:#?}", login_request.clone());
-                let user_exists = crate::entities::user::check_user_exist(login_req.email, data.clone()).await;
+                let user_exists =
+                    crate::entities::user::check_user_exist(login_req.email, data.clone()).await;
 
                 if user_exists {
                     // process login

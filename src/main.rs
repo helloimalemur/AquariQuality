@@ -8,6 +8,7 @@ use crate::api_keys::{create_api_key, delete_api_key, is_key_valid, load_keys_fr
 use crate::entities::parameter::{
     create_parameter_route, delete_parameter_route, modify_parameter_route,
 };
+use crate::entities::session::{login_user_route, logout_user_route};
 use crate::entities::tank::{create_tank_route, delete_tank_route, modify_tank_route};
 use crate::entities::user::{create_user_route, delete_user_route, modify_user_route};
 use crate::middleware::api_key;
@@ -20,7 +21,6 @@ use config::Config;
 use sqlx::{MySql, MySqlPool, Pool};
 use std::collections::HashMap;
 use std::sync::Mutex;
-use crate::entities::session::{login_user_route, logout_user_route};
 
 async fn root(data: Data<Mutex<AppState>>, req: HttpRequest) -> String {
     if is_key_valid(
@@ -88,7 +88,7 @@ async fn main() -> std::io::Result<()> {
             .wrap(api_key::ApiKey::new("".to_string()))
             // login/logout
             .service(web::resource("/login/").post(login_user_route))
-            .service(web::resource("/logout/").post(logout_user_route))// todo
+            .service(web::resource("/logout/").post(logout_user_route)) // todo
             // src/api_keys
             .service(web::resource("/api/create/").post(create_api_key))
             .service(web::resource("/api/delete/").post(delete_api_key))
