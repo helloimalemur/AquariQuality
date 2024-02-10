@@ -83,17 +83,21 @@ pub async fn login_user_route(
                 };
                 // println!("{:#?}", login_request.clone());
                 // verify user exists
-                let user_exists = check_user_exist(login_req.email, data.clone()).await;
+                let user_exists = check_user_exist(login_req.email.clone(), data.clone()).await;
                 if user_exists {
                     // process login and return session_id
                     let session_id = create_session(login_request, data.clone()).await;
-                    println!("LOGIN SUCCESSFUL: {} :: {}", login_req.email, session_id);
+                    println!(
+                        "LOGIN SUCCESSFUL: {} :: {}",
+                        login_req.email.clone(),
+                        session_id
+                    );
                     session_id.to_string()
                 } else if !user_exists {
-                    println!("LOGIN FAILED: {}", login_req.email);
+                    println!("LOGIN FAILED: {}", login_req.email.clone());
                     "user does not exist\n".to_string()
                 } else {
-                    println!("LOGIN FAILED: {}", login_req.email);
+                    println!("LOGIN FAILED: {}", login_req.email.clone());
                     "error logging in\n".to_string()
                 }
             } else {
@@ -146,6 +150,9 @@ pub async fn create_session(
         // delete any old sessions prior to creating new session
         delete_session_by_userid(user.user_id, db_pool.clone()).await;
 
+        let userid = user.user_id.clone();
+        let email = user.email.clone();
+
         if let Ok(query_result) =
             sqlx::query("INSERT INTO session (userid,name,email,sessionid) VALUES (?,?,?,?)")
                 .bind(user.user_id)
@@ -155,7 +162,12 @@ pub async fn create_session(
                 .execute(&*db_pool)
                 .await
         {
-            println!("SESSION CREATED");
+            println!(
+                "SESSION CREATED :: {} :: {} :: {}",
+                userid,
+                email,
+                new_session_id.clone()
+            );
             new_session_id.to_string()
         } else {
             "null".to_string()
@@ -209,21 +221,34 @@ pub async fn logout_user_route(
                 };
 
                 // println!("{:#?}", logout_request.clone());
-                let user_exists = check_user_exist(logout_rq.email, data.clone()).await;
+                let user_exists = check_user_exist(logout_rq.email.clone(), data.clone()).await;
 
                 if user_exists {
                     // process login
                     let mut app_state = data.lock();
                     let db_pool = app_state.as_mut().unwrap().db_pool.lock().unwrap();
-                    delete_session_by_sessionid(logout_rq.session_id, db_pool.clone()).await;
+                    delete_session_by_sessionid(logout_rq.session_id.clone(), db_pool.clone())
+                        .await;
 
-                    println!("LOGOUT SUCCESSFUL: {} :: {}", logout_rq.email, logout_rq.session_id);
+                    println!(
+                        "LOGOUT SUCCESSFUL: {} :: {}",
+                        logout_rq.email.clone(),
+                        logout_rq.session_id.clone()
+                    );
                     "user logout successful\n".to_string()
                 } else if !user_exists {
-                    println!("LOGOUT FAILED, USER DOES NOT EXIST: {} :: {}", logout_rq.email, logout_rq.session_id);
+                    println!(
+                        "LOGOUT FAILED, USER DOES NOT EXIST: {} :: {}",
+                        logout_rq.email.clone(),
+                        logout_rq.session_id.clone()
+                    );
                     "user does not exist\n".to_string()
                 } else {
-                    println!("LOGOUT FAILED: {} :: {}", logout_rq.email, logout_rq.session_id);
+                    println!(
+                        "LOGOUT FAILED: {} :: {}",
+                        logout_rq.email.clone(),
+                        logout_rq.session_id.clone()
+                    );
                     "error logging out\n".to_string()
                 }
             } else {
@@ -241,24 +266,33 @@ pub async fn logout_user_route(
 }
 
 pub async fn delete_session_by_userid(user_id: i16, db_pool: Pool<MySql>) {
-    let query_result = sqlx::query("DELETE FROM session WHERE userid=(?)")
-        .bind(user_id)
+    if let Ok(query_result) = sqlx::query("DELETE FROM session WHERE userid=(?)")
+        .bind(user_id.clone())
         .execute(&db_pool)
-        .await;
+        .await
+    {
+        println!("SESSION DELETED :: {}", user_id.clone());
+    }
 }
 
 pub async fn delete_session_by_email(email: String, db_pool: Pool<MySql>) {
-    let query_result = sqlx::query("DELETE FROM session WHERE email=(?)")
-        .bind(email)
+    if let Ok(query_result) = sqlx::query("DELETE FROM session WHERE email=(?)")
+        .bind(email.clone())
         .execute(&db_pool)
-        .await;
+        .await
+    {
+        println!("SESSION DELETED :: {}", email.clone());
+    }
 }
 
 pub async fn delete_session_by_sessionid(session_id: String, db_pool: Pool<MySql>) {
-    let query_result = sqlx::query("DELETE FROM session WHERE sessionid=(?)")
-        .bind(session_id)
+    if let Ok(query_result) = sqlx::query("DELETE FROM session WHERE sessionid=(?)")
+        .bind(session_id.clone())
         .execute(&db_pool)
-        .await;
+        .await
+    {
+        println!("SESSION DELETED :: {}", session_id);
+    }
 }
 
 pub async fn check_if_session_exists(session_id: SessionId, db_pool: Pool<MySql>) -> bool {
