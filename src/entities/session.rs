@@ -86,20 +86,26 @@ pub async fn login_user_route(
                 let user_exists = check_user_exist(login_req.email, data.clone()).await;
                 if user_exists {
                     // process login and return session_id
-                    let session_id = create_session(login_request, data.clone()).await; // todo
+                    let session_id = create_session(login_request, data.clone()).await;
+                    println!("LOGIN SUCCESSFUL: {} :: {}", login_req.email, session_id);
                     session_id.to_string()
                 } else if !user_exists {
+                    println!("LOGIN FAILED: {}", login_req.email);
                     "user does not exist\n".to_string()
                 } else {
+                    println!("LOGIN FAILED: {}", login_req.email);
                     "error logging in\n".to_string()
                 }
             } else {
+                println!("LOGIN FAILED");
                 "error logging in\n".to_string()
             }
         } else {
+            println!("LOGIN FAILED - INVALID API KEY");
             "invalid api key\n".to_string()
         }
     } else {
+        println!("LOGIN FAILED - INVALID API KEY");
         "invalid api key\n".to_string()
     }
 }
@@ -149,6 +155,7 @@ pub async fn create_session(
                 .execute(&*db_pool)
                 .await
         {
+            println!("SESSION CREATED");
             new_session_id.to_string()
         } else {
             "null".to_string()
@@ -210,19 +217,25 @@ pub async fn logout_user_route(
                     let db_pool = app_state.as_mut().unwrap().db_pool.lock().unwrap();
                     delete_session_by_sessionid(logout_rq.session_id, db_pool.clone()).await;
 
+                    println!("LOGOUT SUCCESSFUL: {} :: {}", logout_rq.email, logout_rq.session_id);
                     "user logout successful\n".to_string()
                 } else if !user_exists {
+                    println!("LOGOUT FAILED, USER DOES NOT EXIST: {} :: {}", logout_rq.email, logout_rq.session_id);
                     "user does not exist\n".to_string()
                 } else {
+                    println!("LOGOUT FAILED: {} :: {}", logout_rq.email, logout_rq.session_id);
                     "error logging out\n".to_string()
                 }
             } else {
+                println!("LOGOUT FAILED");
                 "error logging out\n".to_string()
             }
         } else {
+            println!("LOGOUT FAILED - INVALID API KEY");
             "invalid api key\n".to_string()
         }
     } else {
+        println!("LOGOUT FAILED - INVALID API KEY");
         "invalid api key\n".to_string()
     }
 }
