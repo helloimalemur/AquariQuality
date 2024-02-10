@@ -101,9 +101,22 @@ pub async fn create_session(
     let mut app_state = data.lock();
     let mut db_pool = app_state.as_mut().unwrap().db_pool.lock().unwrap();
 
-    let user: User = get_user_from_login_request(user_login_request, data.clone()).await;
+    println!("{:#?}", !db_pool.is_closed());
+
+    // let user: User = get_user_from_login_request(user_login_request, data.clone()).await;
+
+    let user: User = User {
+        user_id: 0,
+        name: "".to_string(),
+        email: "".to_string(),
+        password: "".to_string(),
+        tanks: vec![],
+    };
+
+    println!("{:#?}", user);
 
     let new_session_id = generate_jwt_session_id(user.user_id).await;
+
 
     if let Ok(query_result) =
         sqlx::query("INSERT INTO session (userid,name,email,sessionid) VALUES (?,?,?,?)")
@@ -151,7 +164,7 @@ async fn get_user_from_login_request(
 
 async fn generate_jwt_session_id(user_id: u16) -> String {
     let mut rand = rand::thread_rng();
-    let temp_new_session_id: i64 = rand.gen();
+    let temp_new_session_id: u128 = rand.gen();
     temp_new_session_id.to_string()
 }
 
