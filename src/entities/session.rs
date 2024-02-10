@@ -1,4 +1,3 @@
-use std::net::ToSocketAddrs;
 use crate::api_keys::is_key_valid;
 use crate::entities::user::{create_user, User, UserRequest};
 use crate::AppState;
@@ -8,6 +7,7 @@ use actix_web::{error, web, HttpRequest, HttpResponse};
 use futures_util::{StreamExt, TryStreamExt};
 use rand::{random, Rng};
 use sqlx::{Error, MySql, Pool, Row};
+use std::net::ToSocketAddrs;
 use std::sync::{Mutex, MutexGuard};
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
@@ -92,7 +92,10 @@ pub async fn login_user_route(
     }
 }
 
-pub async fn create_session(user_login_request: LoginRequest, data: Data<Mutex<AppState>>) -> String {
+pub async fn create_session(
+    user_login_request: LoginRequest,
+    data: Data<Mutex<AppState>>,
+) -> String {
     let mut app_state = data.lock();
     let mut db_pool = app_state.as_mut().unwrap().db_pool.lock().unwrap();
 
@@ -105,7 +108,7 @@ pub async fn create_session(user_login_request: LoginRequest, data: Data<Mutex<A
             .bind(user.user_id)
             .bind(user.name)
             .bind(user.email)
-            .bind(new_session_id)
+            .bind(new_session_id.clone())
             .execute(&*db_pool)
             .await
     {
