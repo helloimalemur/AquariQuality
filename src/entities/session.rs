@@ -226,3 +226,56 @@ pub async fn logout_user_route(
         "invalid api key\n".to_string()
     }
 }
+
+
+#[cfg(test)]
+mod tests {
+    use std::collections::HashMap;
+    use std::sync::Mutex;
+    use actix_web::web::Data;
+    use config::Config;
+    use sqlx::MySqlPool;
+    use crate::api_keys::load_keys_from_file;
+    use crate::AppState;
+    use crate::entities::session::{create_session, LoginRequest};
+
+    #[actix_rt::test]
+    pub async fn test_session_insert() {
+        let data = setup_test().await;
+        let login_request = LoginRequest {
+            email: "email@mail.com".to_string(),
+            password: "password".to_string(),
+        };
+
+        println!("{:#?}", login_request.clone());
+
+        let session_id = create_session(login_request, data.clone()).await;
+    }
+
+
+
+    async fn setup_test() -> Data<Mutex<AppState>> {
+        let settings = Config::builder()
+            .add_source(config::File::with_name("config/Settings"))
+            .build()
+            .expect("could not load Settings.toml");
+        let settings_map = settings
+            .try_deserialize::<HashMap<String, String>>()
+            .expect("unable to deserialize settings");
+
+        let database_url = settings_map
+            .get("database_url")
+            .expect("could not get database_url from settings");
+
+        // database connection
+        let db_pool = MySqlPool::connect(database_url)
+            .await
+            .expect("unable to connect to database");
+
+        let state = Data::new(Mutex::new(AppState::new(
+            load_keys_from_file(),
+            db_pool.clone(),
+        )));
+        state
+    }
+}
