@@ -76,7 +76,7 @@ pub async fn create_user_route(
                     tanks: vec![],
                 };
 
-                println!("{:#?}", new_user.clone());
+                // println!("{:#?}", new_user.clone());
                 let user_exists = check_user_exist(user_req.email, data.clone()).await;
                 if !user_exists {
                     create_user(new_user.clone(), data.clone()).await;
@@ -121,7 +121,7 @@ pub async fn create_user(user: User, data: Data<Mutex<AppState>>) {
     let mut app_state = data.lock();
     let mut db_pool = app_state.as_mut().unwrap().db_pool.lock().unwrap();
     let is_closed = db_pool.is_closed();
-    println!("Database connected: {}", !is_closed);
+    // println!("Database connected: {}", !is_closed);
 
     let query_result =
         sqlx::query("INSERT INTO user (userid, name, email, password) VALUES (?,?,?,?)")
@@ -133,7 +133,7 @@ pub async fn create_user(user: User, data: Data<Mutex<AppState>>) {
             .await
             .unwrap();
 
-    println!("{:#?}", query_result);
+    // println!("{:#?}", query_result);
 }
 
 // curl -XPOST -H'x-api-key: 12790066417744034365' localhost:8080/api/delete/user/ -d '{"name":"johnny","email":"johhny@mail.com"}'

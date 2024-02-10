@@ -108,7 +108,7 @@ async fn get_user_from_login_request(
     user_login_request: LoginRequest,
     db_pool: Pool<MySql>,
 ) -> Result<User, sqlx::Error> {
-    println!("{}", "attempting login");
+    // println!("{}", "attempting login");
     let mut user = sqlx::query("SELECT * FROM user WHERE email LIKE (?) AND password LIKE (?)")
         .bind(user_login_request.email)
         .bind(user_login_request.password)
@@ -198,12 +198,11 @@ pub async fn logout_user_route(
                 let logout_rq = obj.clone();
                 let logout_request = LogoutRequest {
                     session_id: obj.session_id,
-                    email: obj.email
+                    email: obj.email,
                 };
 
-                println!("{:#?}", logout_request.clone());
-                let user_exists =
-                    check_user_exist(logout_rq.email, data.clone()).await;
+                // println!("{:#?}", logout_request.clone());
+                let user_exists = check_user_exist(logout_rq.email, data.clone()).await;
 
                 if user_exists {
                     // process login
@@ -280,7 +279,7 @@ mod tests {
             password: "password".to_string(),
         };
 
-        println!("{:#?}", login_request.clone());
+        // println!("{:#?}", login_request.clone());
 
         let session_id = create_session(login_request, data.clone()).await;
     }
