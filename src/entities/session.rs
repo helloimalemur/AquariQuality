@@ -6,10 +6,10 @@ use actix_web::web::{Data, Payload};
 use actix_web::{error, web, HttpRequest, HttpResponse};
 use futures_util::{StreamExt, TryStreamExt};
 use rand::{random, Rng};
+use sqlx::mysql::MySqlRow;
 use sqlx::{Error, MySql, Pool, Row};
 use std::net::ToSocketAddrs;
 use std::sync::{Mutex, MutexGuard};
-use sqlx::mysql::MySqlRow;
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 struct Session {
@@ -72,8 +72,7 @@ pub async fn login_user_route(
                 };
                 // println!("{:#?}", login_request.clone());
                 // verify user exists
-                let user_exists =
-                    check_user_exist(login_req.email, data.clone()).await;
+                let user_exists = check_user_exist(login_req.email, data.clone()).await;
                 if user_exists {
                     // process login and return session_id
                     let session_id = create_session(login_request, data.clone()).await; // todo
@@ -103,7 +102,6 @@ pub async fn create_session(
 
     // query user from db using login request
     if let Ok(user) = get_user_from_login_request(user_login_request, db_pool.clone()).await {
-
         // create session token
         let new_session_id = generate_jwt_session_id(user.user_id).await;
 
@@ -124,7 +122,7 @@ pub async fn create_session(
             "null".to_string()
         }
     } else {
-        return "null".to_string()
+        return "null".to_string();
     }
 }
 
@@ -132,8 +130,6 @@ async fn get_user_from_login_request(
     user_login_request: LoginRequest,
     db_pool: Pool<MySql>,
 ) -> Result<User, sqlx::Error> {
-
-
     println!("{}", "attempting login");
     let mut user = sqlx::query("SELECT * FROM user WHERE email LIKE (?) AND password LIKE (?)")
         .bind(user_login_request.email)
@@ -158,11 +154,10 @@ async fn generate_jwt_session_id(user_id: i16) -> String {
 }
 
 pub async fn delete_session(user: User, db_pool: Pool<MySql>) {
-    let query_result =
-        sqlx::query("DELETE FROM session WHERE userid=(?)")
-            .bind(user.user_id)
-            .execute(&db_pool)
-            .await;
+    let query_result = sqlx::query("DELETE FROM session WHERE userid=(?)")
+        .bind(user.user_id)
+        .execute(&db_pool)
+        .await;
 }
 pub async fn check_if_session_exists(user: User, data: Data<Mutex<AppState>>) {
     let mut app_state = data.lock();
@@ -232,17 +227,16 @@ pub async fn logout_user_route(
     }
 }
 
-
 #[cfg(test)]
 mod tests {
-    use std::collections::HashMap;
-    use std::sync::Mutex;
+    use crate::api_keys::load_keys_from_file;
+    use crate::entities::session::{create_session, LoginRequest};
+    use crate::AppState;
     use actix_web::web::Data;
     use config::Config;
     use sqlx::MySqlPool;
-    use crate::api_keys::load_keys_from_file;
-    use crate::AppState;
-    use crate::entities::session::{create_session, LoginRequest};
+    use std::collections::HashMap;
+    use std::sync::Mutex;
 
     #[actix_rt::test]
     pub async fn test_session_insert() {
@@ -256,8 +250,6 @@ mod tests {
 
         let session_id = create_session(login_request, data.clone()).await;
     }
-
-
 
     async fn setup_test() -> Data<Mutex<AppState>> {
         let settings = Config::builder()
