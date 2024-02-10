@@ -9,6 +9,7 @@ use rand::{random, Rng};
 use sqlx::{Error, MySql, Pool, Row};
 use std::net::ToSocketAddrs;
 use std::sync::{Mutex, MutexGuard};
+use sqlx::mysql::MySqlRow;
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 struct Session {
@@ -103,66 +104,54 @@ pub async fn create_session(
 
     println!("{:#?}", !db_pool.is_closed());
 
-    // let user: User = get_user_from_login_request(user_login_request, data.clone()).await;
+    if let Ok(user) = get_user_from_login_request(user_login_request, db_pool.clone()).await {
 
-    let user: User = User {
-        user_id: 0,
-        name: "".to_string(),
-        email: "".to_string(),
-        password: "".to_string(),
-        tanks: vec![],
-    };
+        println!("{:#?}", user);
 
-    println!("{:#?}", user);
+        let new_session_id = generate_jwt_session_id(user.user_id).await;
 
-    let new_session_id = generate_jwt_session_id(user.user_id).await;
-
-
-    if let Ok(query_result) =
-        sqlx::query("INSERT INTO session (userid,name,email,sessionid) VALUES (?,?,?,?)")
-            .bind(user.user_id)
-            .bind(user.name)
-            .bind(user.email)
-            .bind(new_session_id.clone())
-            .execute(&*db_pool)
-            .await
-    {
-        new_session_id.to_string()
+        if let Ok(query_result) =
+            sqlx::query("INSERT INTO session (userid,name,email,sessionid) VALUES (?,?,?,?)")
+                .bind(user.user_id)
+                .bind(user.name)
+                .bind(user.email)
+                .bind(new_session_id.clone())
+                .execute(&*db_pool)
+                .await
+        {
+            new_session_id.to_string()
+        } else {
+            "null".to_string()
+        }
     } else {
-        "null".to_string()
+        return "null".to_string()
     }
 }
 
 async fn get_user_from_login_request(
     user_login_request: LoginRequest,
-    data: Data<Mutex<AppState>>,
-) -> User {
-    let mut app_state = data.lock();
-    let mut db_pool = app_state.as_mut().unwrap().db_pool.lock().unwrap();
-    // let query_result =
-    let mut rows = sqlx::query("SELECT * FROM user WHERE email LIKE (?) AND password LIKE (?)")
+    db_pool: Pool<MySql>,
+) -> Result<User, sqlx::Error> {
+
+
+    println!("{}", "attempting login");
+    let mut user = sqlx::query("SELECT * FROM user WHERE email LIKE (?) AND password LIKE (?)")
         .bind(user_login_request.email)
         .bind(user_login_request.password)
-        .fetch(&*db_pool);
+        .map(|row: MySqlRow| User {
+            user_id: row.get(0),
+            name: row.get(1),
+            email: row.get(2),
+            password: row.get(3),
+            tanks: vec![],
+        })
+        .fetch_one(&db_pool)
+        .await;
 
-    let mut user = User {
-        user_id: 0,
-        name: "".to_string(),
-        email: "".to_string(),
-        password: "".to_string(),
-        tanks: vec![],
-    };
-
-    while let Some(row) = rows.try_next().await.unwrap() {
-        user.user_id = row.get("userid");
-        user.name = row.get("name");
-        user.email = row.get("email");
-        user.password = row.get("password");
-    }
     user
 }
 
-async fn generate_jwt_session_id(user_id: u16) -> String {
+async fn generate_jwt_session_id(user_id: i16) -> String {
     let mut rand = rand::thread_rng();
     let temp_new_session_id: u128 = rand.gen();
     temp_new_session_id.to_string()

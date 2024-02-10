@@ -11,7 +11,7 @@ use std::sync::{Mutex, MutexGuard};
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct User {
-    pub user_id: u16,
+    pub user_id: i16,
     pub name: String,
     pub email: String,
     pub password: String,
@@ -69,7 +69,7 @@ pub async fn create_user_route(
                 let new_user_id: u16 = rand.gen();
                 let user_req = obj.clone();
                 let new_user = User {
-                    user_id: new_user_id,
+                    user_id: new_user_id as i16,
                     name: obj.name,
                     email: obj.email,
                     password: obj.password,
