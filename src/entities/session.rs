@@ -20,6 +20,11 @@ struct Session {
 }
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+struct SessionId {
+    session_id: String,
+}
+
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 struct LoginRequest {
     email: String,
     password: String,
@@ -93,6 +98,27 @@ pub async fn login_user_route(
     }
 }
 
+async fn get_user_from_login_request(
+    user_login_request: LoginRequest,
+    db_pool: Pool<MySql>,
+) -> Result<User, sqlx::Error> {
+    println!("{}", "attempting login");
+    let mut user = sqlx::query("SELECT * FROM user WHERE email LIKE (?) AND password LIKE (?)")
+        .bind(user_login_request.email)
+        .bind(user_login_request.password)
+        .map(|row: MySqlRow| User {
+            user_id: row.get(0),
+            name: row.get(1),
+            email: row.get(2),
+            password: row.get(3),
+            tanks: vec![],
+        })
+        .fetch_one(&db_pool)
+        .await;
+
+    user
+}
+
 pub async fn create_session(
     user_login_request: LoginRequest,
     data: Data<Mutex<AppState>>,
@@ -126,42 +152,10 @@ pub async fn create_session(
     }
 }
 
-async fn get_user_from_login_request(
-    user_login_request: LoginRequest,
-    db_pool: Pool<MySql>,
-) -> Result<User, sqlx::Error> {
-    println!("{}", "attempting login");
-    let mut user = sqlx::query("SELECT * FROM user WHERE email LIKE (?) AND password LIKE (?)")
-        .bind(user_login_request.email)
-        .bind(user_login_request.password)
-        .map(|row: MySqlRow| User {
-            user_id: row.get(0),
-            name: row.get(1),
-            email: row.get(2),
-            password: row.get(3),
-            tanks: vec![],
-        })
-        .fetch_one(&db_pool)
-        .await;
-
-    user
-}
-
 async fn generate_jwt_session_id(user_id: i16) -> String {
     let mut rand = rand::thread_rng();
     let temp_new_session_id: u128 = rand.gen();
     temp_new_session_id.to_string()
-}
-
-pub async fn delete_session(user: User, db_pool: Pool<MySql>) {
-    let query_result = sqlx::query("DELETE FROM session WHERE userid=(?)")
-        .bind(user.user_id)
-        .execute(&db_pool)
-        .await;
-}
-pub async fn check_if_session_exists(user: User, data: Data<Mutex<AppState>>) {
-    let mut app_state = data.lock();
-    let mut db_pool = app_state.as_mut().unwrap().db_pool.lock().unwrap();
 }
 
 pub async fn logout_user_route(
@@ -225,6 +219,25 @@ pub async fn logout_user_route(
     } else {
         "invalid api key\n".to_string()
     }
+}
+
+pub async fn delete_session(user: User, db_pool: Pool<MySql>) {
+    let query_result = sqlx::query("DELETE FROM session WHERE userid=(?)")
+        .bind(user.user_id)
+        .execute(&db_pool)
+        .await;
+}
+
+pub async fn check_if_session_exists(session_id: SessionId, db_pool: Pool<MySql>) -> bool {
+    return if let Ok(result) = sqlx::query("SELECT (1) FROM session WHERE sessionid=(?)")
+        .bind(session_id.session_id)
+        .execute(&db_pool)
+        .await
+    {
+        true
+    } else {
+        false
+    };
 }
 
 #[cfg(test)]
