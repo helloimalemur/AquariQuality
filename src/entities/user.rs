@@ -19,7 +19,7 @@ pub struct User {
 }
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
-pub(crate) struct UserRequest {
+pub struct UserRequest {
     pub name: String,
     pub email: String,
     pub password: String,
