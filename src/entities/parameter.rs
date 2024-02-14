@@ -82,11 +82,8 @@ pub async fn create_parameter_route(
                 nitrate: param_request.nitrate,
             };
 
-            let mut app_state = data.lock();
-            let mut db_pool = app_state.as_mut().unwrap().db_pool.lock().unwrap();
-
             // let session_exists = check_if_session_exists(SessionId::new(param_request.session_id), db_pool.clone()).await;
-            let session_exists = check_if_session_exists(SessionId::new(param_request.session_id), db_pool.clone()).await;
+            let session_exists = check_if_session_exists(SessionId::new(param_request.session_id), data.clone()).await;
 
 
 

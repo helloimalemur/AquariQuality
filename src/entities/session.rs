@@ -7,7 +7,7 @@ use actix_web::{error, web, HttpRequest, HttpResponse};
 use futures_util::{StreamExt, TryStreamExt};
 use rand::{random, Rng};
 use sqlx::mysql::MySqlRow;
-use sqlx::{Error, MySql, Pool, Row};
+use sqlx::{Error, Executor, MySql, Pool, Row};
 use std::net::ToSocketAddrs;
 use std::sync::{Mutex, MutexGuard};
 
@@ -230,17 +230,14 @@ pub async fn logout_user_route(
 
                 // println!("{:#?}", logout_request.clone());
                 let user_exists = check_user_exist(logout_rq.email.clone(), data.clone()).await;
-                let mut app_state = data.lock();
-                let mut db_pool = app_state.as_mut().unwrap().db_pool.lock().unwrap();
-                let user_session_exists = check_if_session_exists(SessionId::new(logout_rq.session_id.clone()), db_pool.clone()).await;
+                // let mut app_state = data.lock();
+                // let mut db_pool = app_state.as_mut().unwrap().db_pool.lock().unwrap();
+                let user_session_exists = check_if_session_exists(SessionId::new(logout_rq.session_id.clone()), data.clone()).await;
 
 
                 if user_exists && user_session_exists {
                     // process login
-                    let mut app_state = data.lock();
-                    let db_pool = app_state.as_mut().unwrap().db_pool.lock().unwrap();
-                    delete_session_by_sessionid(logout_rq.session_id.clone(), db_pool.clone())
-                        .await;
+                    delete_session_by_sessionid(logout_rq.session_id.clone(), data.clone()).await;
 
                     println!(
                         "LOGOUT SUCCESSFUL: {} :: {}",
@@ -297,22 +294,30 @@ pub async fn delete_session_by_email(email: String, db_pool: Pool<MySql>) {
     }
 }
 
-pub async fn delete_session_by_sessionid(session_id: String, db_pool: Pool<MySql>) {
-    if let Ok(query_result) = sqlx::query("DELETE FROM session WHERE sessionid=(?)")
+pub async fn delete_session_by_sessionid(session_id: String, data: Data<Mutex<AppState>>) {
+    let mut app_state = data.lock();
+    let mut db_pool = app_state.as_mut().unwrap().db_pool.lock().unwrap();
+
+    let query_result = sqlx::query("DELETE FROM session WHERE sessionid=(?)")
         .bind(session_id.clone())
-        .execute(&db_pool)
+        .execute(&*db_pool)
         .await
-    {
+        .is_ok();
+
+
+    if query_result {
         println!("SESSION DELETED :: {}", session_id);
     }
 }
 
-pub async fn check_if_session_exists(session_id: SessionId, db_pool: Pool<MySql>) -> bool {
+pub async fn check_if_session_exists(session_id: SessionId, data: Data<Mutex<AppState>>) -> bool {
+    let mut app_state = data.lock();
+    let mut db_pool = app_state.as_mut().unwrap().db_pool.lock().unwrap();
     println!("session check:");
     if session_id.session_id.len() > 0 {
         let result = sqlx::query("SELECT * FROM session WHERE sessionid=(?)")
             .bind(session_id.session_id.to_string())
-            .fetch_all(&db_pool)
+            .fetch_all(&*db_pool)
             .await
             .unwrap();
 
