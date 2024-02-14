@@ -132,6 +132,8 @@ async fn get_user_from_login_request(
     // println!("{}", "attempting login");
     // println!("{:#?}", "get user from login req");
 
+    // todo()! troubleshoot
+
     let mut user = sqlx::query("SELECT * FROM user WHERE email LIKE (?) AND password LIKE (?)")
         .bind(user_login_request.email)
         .bind(user_login_request.password)
