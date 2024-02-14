@@ -67,17 +67,20 @@ pub async fn create_user_route(
                 body.extend_from_slice(&chunk);
             }
 
+
+
             // body is loaded, now we can deserialize serde-json
             if let Ok(obj) = serde_json::from_slice::<UserRequest>(&body) {
                 let mut rand = rand::thread_rng();
                 let new_user_id: u16 = rand.gen();
                 let user_req = obj.clone();
                 let new_user_id_i = new_user_id as i16;
+                let password_hash = create_password_hash(obj.password, "spiffy".to_string());
                 let new_user = User {
                     user_id: new_user_id_i,
                     name: obj.name,
                     email: obj.email,
-                    password: obj.password,
+                    password: password_hash,
                     tanks: vec![],
                 };
 
