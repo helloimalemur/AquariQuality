@@ -270,6 +270,7 @@ dependencies = [
  "actix-files",
  "actix-rt",
  "actix-web",
+ "bytes",
  "config",
  "futures",
  "futures-util",

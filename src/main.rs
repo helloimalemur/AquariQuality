@@ -101,7 +101,7 @@ async fn main() -> std::io::Result<()> {
             // .service(web::resource("/api/delete/tank/").post(delete_tank_route))
             // .service(web::resource("/api/modify/tank/").post(modify_tank_route))
             // // src/entities/parameters
-            // .service(web::resource("/api/create/parameter/").post(create_parameter_route))
+            .service(web::resource("/api/create/parameter/").post(create_parameter_route))
             // .service(web::resource("/api/delete/parameter/").post(delete_parameter_route))
             // .service(web::resource("/api/modify/parameter/").post(modify_parameter_route))
             //

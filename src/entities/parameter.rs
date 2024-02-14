@@ -1,31 +1,54 @@
 use crate::api_keys::is_key_valid;
 use crate::entities::tank::Tank;
 use crate::AppState;
-use actix_web::web::Data;
-use actix_web::HttpRequest;
+use actix_web::web::{BytesMut, Data};
+use actix_web::{HttpRequest, web};
 use sqlx::{MySql, Pool};
 use std::sync::Mutex;
+use actix_web::dev::Payload;
+use actix_web::error::ErrorBadRequest;
+use futures_util::StreamExt;
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct Parameter {
     user_id: i64,
-    ph: i64,
-    kh: i64,
+    ph: f32,
+    kh: f32,
+    ammmonia: f32,
+    nitrite: f32,
+    nitrate: f32,
+}
+
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+pub struct ParameterRequest {
+    session_id: String,
+    user_id: i64,
+    ph: f32,
+    kh: f32,
+    ammmonia: f32,
+    nitrite: f32,
+    nitrate: f32,
 }
 
 // CREATE TABLE `parameter` (
 // `userid` INT NOT NULL,
-// `tankid` INT NOT NULL,
-// `ph` INT,
-// `kh` INT,
+// `ph` FLOAT,
+// `kh` FLOAT,
+// `ammonia` FLOAT,
+// `nitrite` FLOAT,
+// `nitrate` FLOAT,
 // PRIMARY KEY (`userid`)
 // ) ENGINE=InnoDB;
 
+// curl -XPOST -H'x-api-key: omganotherone' localhost:8080/api/create/parameter/ -d '{"name":"johnny","email":"johhny@mail.com","password":"password"}'
 pub async fn create_parameter_route(
     // name: web::Path<String>,
+    mut payload: Payload,
     data: Data<Mutex<AppState>>,
     req: HttpRequest,
 ) -> String {
+    const MAX_SIZE: usize = 262_144; // max payload size is 256k
+
     // verify api_key
     if req.headers().get("x-api-key").is_some() {
         if is_key_valid(
@@ -37,6 +60,29 @@ pub async fn create_parameter_route(
                 .to_string(),
             data.lock().unwrap().api_key.lock().unwrap().to_vec(),
         ) {
+            let mut body = web::BytesMut::new();
+
+            while let Some(chunk) = payload.next().await {
+                let chunk = chunk.unwrap();
+                // limit max size of in-memory payload
+                if (body.len() + chunk.len()) > MAX_SIZE {
+                    return ErrorBadRequest("overflow").to_string();
+                }
+                body.extend_from_slice(&chunk);
+            }
+
+            let param_request = serde_json::from_slice::<ParameterRequest>(&body).unwrap();
+            let param = Parameter {
+                user_id: param_request.user_id,
+                ph: param_request.ph,
+                kh: param_request.kh,
+                ammmonia: param_request.ammmonia,
+                nitrite: param_request.nitrite,
+                nitrate: param_request.nitrate,
+            };
+
+            println!("{:#?}", param);
+
             "ok\n".to_string()
         } else {
             "invalid api key\n".to_string()
