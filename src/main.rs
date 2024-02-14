@@ -64,9 +64,6 @@ impl AppState {
 
 #[actix_web::main] // or #[tokio::main]
 async fn main() -> std::io::Result<()> {
-    let _ = start_front_end().await;
-
-
     let settings = Config::builder()
         .add_source(config::File::with_name("config/Settings"))
         .build()
@@ -83,6 +80,11 @@ async fn main() -> std::io::Result<()> {
     let db_pool = MySqlPool::connect(database_url)
         .await
         .expect("unable to connect to database");
+
+    if !db_pool.is_closed() {
+        let _ = start_front_end().await;
+    }
+
 
     let state = Data::new(Mutex::new(AppState::new(
         load_keys_from_file(),

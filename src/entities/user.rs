@@ -72,8 +72,9 @@ pub async fn create_user_route(
                 let mut rand = rand::thread_rng();
                 let new_user_id: u16 = rand.gen();
                 let user_req = obj.clone();
+                let new_user_id_i = new_user_id as i16;
                 let new_user = User {
-                    user_id: new_user_id as i16,
+                    user_id: new_user_id_i,
                     name: obj.name,
                     email: obj.email,
                     password: obj.password,
@@ -83,7 +84,7 @@ pub async fn create_user_route(
                 println!("{:#?}", new_user.clone());
                 let user_exists = check_user_exist(user_req.email, data.clone()).await;
                 if !user_exists {
-                    create_user(new_user.clone(), data.clone()).await;
+                    let _ = create_user(new_user.clone(), data.clone()).await;
                     "user created\n".to_string()
                 } else if user_exists {
                     "user exists\n".to_string()
@@ -106,7 +107,6 @@ pub async fn check_user_exist(user_email: String, mut data: Data<Mutex<AppState>
     let mut app_state = data.lock();
     let mut db_pool = app_state.as_mut().unwrap().db_pool.lock().unwrap();
 
-    // todo()! hash password
 
     let query_result= sqlx::query("SELECT email FROM user WHERE email LIKE (?)")
         .bind(user_email.clone())
@@ -121,7 +121,7 @@ pub async fn check_user_exist(user_email: String, mut data: Data<Mutex<AppState>
     } else {
         user_exists = false;
     }
-    // println!("user exists: {}", user_exists);
+    println!("user exists: {}", user_exists);
     user_exists
 }
 
@@ -130,13 +130,14 @@ pub async fn check_user_exist_with_password_hash(user_email: String, user_passwo
     let mut user_exists_and_password: bool = false;
     let mut app_state = data.lock();
     let mut db_pool = app_state.as_mut().unwrap().db_pool.lock().unwrap();
-    let mut sett_state = data.lock();
-    let mut settings_map = sett_state.as_mut().unwrap().settings.lock().unwrap();
 
-    let hash_key = settings_map.get("hash_key").unwrap();
+    // todo()! troubleshoot
+    // let mut sett_state = data.lock();
+    // let mut settings_map = sett_state.unwrap().settings.lock().unwrap();
+    // let hash_key = settings_map.get("hash_key").unwrap();
 
-    // todo()! hash password
-    let password_hash = create_password_hash(user_password.clone(), hash_key.clone());
+
+    // let password_hash = create_password_hash(user_password.clone(), "spiffy".to_string());
 
     if let Ok(query_result) = sqlx::query("SELECT email,password FROM user WHERE email LIKE (?) AND password LIKE (?)")
         .bind(user_email.clone())
@@ -144,7 +145,7 @@ pub async fn check_user_exist_with_password_hash(user_email: String, user_passwo
         .fetch_one(&*db_pool)
         .await
     {
-        if user_email.eq_ignore_ascii_case(query_result.get("email")) && password_hash.eq_ignore_ascii_case(query_result.get("password")) {
+        if user_email.eq_ignore_ascii_case(query_result.get("email")) && user_password.eq_ignore_ascii_case(query_result.get("password")) {
             user_exists_and_password = true;
         }
     }
@@ -167,16 +168,18 @@ pub fn create_password_hash(password: String, hash_key: String) -> String {
 pub async fn create_user(user: User, data: Data<Mutex<AppState>>) {
     let mut app_state = data.lock();
     let mut db_pool = app_state.as_mut().unwrap().db_pool.lock().unwrap();
-    let mut sett_state = data.lock();
-    let mut settings_map = sett_state.as_mut().unwrap().settings.lock().unwrap();
 
-    let hash_key = settings_map.get("hash_key").unwrap();
-
-    let password_hash = create_password_hash(user.password.clone(), hash_key.clone());
-    let is_closed = db_pool.is_closed();
-    // println!("Database connected: {}", !is_closed);
+    println!("Create user: {}", user.email);
 
     // todo()! troubleshoot
+    // let mut sett_state = data.lock();
+    // let mut settings_map = sett_state.unwrap().settings.lock().unwrap();
+    // let hash_key = settings_map.get("hash_key").unwrap();
+
+
+    let password_hash = create_password_hash(user.password.clone(), "spiffy".to_string());
+    let is_closed = db_pool.is_closed();
+    // println!("Database connected: {}", !is_closed);
 
 
     let query_result =
@@ -184,7 +187,7 @@ pub async fn create_user(user: User, data: Data<Mutex<AppState>>) {
             .bind(user.user_id as u16)
             .bind(user.name)
             .bind(user.email)
-            .bind(password_hash.clone())
+            .bind(user.password)
             .execute(&*db_pool)
             .await
             .unwrap();

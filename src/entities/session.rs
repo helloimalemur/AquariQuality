@@ -157,8 +157,9 @@ pub async fn create_session(
         // delete any old sessions prior to creating new session
         delete_session_by_userid(user.user_id, db_pool.clone()).await;
 
-        let userid = user.user_id.clone();
+        let userid = user.user_id.clone() as i32;
         let email = user.email.clone();
+
 
         if let Ok(query_result) =
             sqlx::query("INSERT INTO session (userid,name,email,sessionid) VALUES (?,?,?,?)")
@@ -276,8 +277,9 @@ pub async fn logout_user_route(
 }
 
 pub async fn delete_session_by_userid(user_id: i16, db_pool: Pool<MySql>) {
+    let userid = user_id as i32;
     if let Ok(query_result) = sqlx::query("DELETE FROM session WHERE userid=(?)")
-        .bind(user_id.clone())
+        .bind(userid.clone())
         .execute(&db_pool)
         .await
     {
