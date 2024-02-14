@@ -5,7 +5,6 @@ use actix_web::web::{BytesMut, Data};
 use actix_web::{HttpRequest, web};
 use sqlx::{MySql, Pool};
 use std::sync::Mutex;
-use actix_web::dev::Payload;
 use actix_web::error::ErrorBadRequest;
 use futures_util::StreamExt;
 
@@ -40,10 +39,10 @@ pub struct ParameterRequest {
 // PRIMARY KEY (`userid`)
 // ) ENGINE=InnoDB;
 
-// curl -XPOST -H'x-api-key: omganotherone' localhost:8080/api/create/parameter/ -d '{"name":"johnny","email":"johhny@mail.com","password":"password"}'
+// curl -XPOST -H'x-api-key: omganotherone' localhost:8080/api/create/parameter/ -d '{ "session_id": "String", "user_id": 441234, "ph": 0.0, "kh": 0.0, "ammmonia": 0.0, "nitrite": 0.0, "nitrate": 0.0}'
 pub async fn create_parameter_route(
     // name: web::Path<String>,
-    mut payload: Payload,
+    mut payload: web::Payload,
     data: Data<Mutex<AppState>>,
     req: HttpRequest,
 ) -> String {
