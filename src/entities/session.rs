@@ -189,6 +189,8 @@ async fn generate_jwt_session_id(user_id: i16) -> String {
     temp_new_session_id.to_string()
 }
 
+
+// curl -XPOST -H'x-api-key: omganotherone' localhost:8080/logout/ -d '{"email":"johhny@mail.com","session_id":"password"}'
 pub async fn logout_user_route(
     // name: web::Path<String>,
     mut payload: web::Payload,
