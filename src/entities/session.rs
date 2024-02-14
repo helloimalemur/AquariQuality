@@ -315,17 +315,22 @@ pub async fn check_if_session_exists(session_id: SessionId, db_pool: Pool<MySql>
             .fetch_all(&db_pool)
             .await
             .unwrap();
-        let row1 = result.get(0).unwrap();
-        // println!("{:#?}", row1);
-        // let b: String = row1.get(3);
-        let stored_sessionid: String = row1.get("sessionid");
-        println!("{}", stored_sessionid);
 
-        return if stored_sessionid.eq_ignore_ascii_case(session_id.session_id.as_str()) {
-            true
+        return if let Some(row1) = result.get(0) {
+            // println!("{:#?}", row1);
+            // let b: String = row1.get(3);
+            let stored_sessionid: String = row1.get("sessionid");
+            println!("{}", stored_sessionid);
+
+            if stored_sessionid.eq_ignore_ascii_case(session_id.session_id.as_str()) {
+                true
+            } else {
+                false
+            }
         } else {
             false
         }
+
     } else {
         false
     }

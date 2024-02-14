@@ -113,7 +113,7 @@ pub async fn check_user_exist(user_email: String, mut data: Data<Mutex<AppState>
             user_exists = true;
         }
     }
-
+    // println!("user exists: {}", user_exists);
     user_exists
 }
 
