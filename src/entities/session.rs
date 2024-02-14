@@ -407,6 +407,7 @@ mod tests {
         let state = Data::new(Mutex::new(AppState::new(
             load_keys_from_file(),
             db_pool.clone(),
+            settings_map
         )));
         state
     }
