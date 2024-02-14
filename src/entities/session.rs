@@ -230,8 +230,12 @@ pub async fn logout_user_route(
 
                 // println!("{:#?}", logout_request.clone());
                 let user_exists = check_user_exist(logout_rq.email.clone(), data.clone()).await;
+                let mut app_state = data.lock();
+                let mut db_pool = app_state.as_mut().unwrap().db_pool.lock().unwrap();
+                let user_session_exists = check_if_session_exists(SessionId::new(logout_rq.session_id.clone()), db_pool.clone()).await;
 
-                if user_exists {
+
+                if user_exists && user_session_exists {
                     // process login
                     let mut app_state = data.lock();
                     let db_pool = app_state.as_mut().unwrap().db_pool.lock().unwrap();
@@ -304,15 +308,22 @@ pub async fn delete_session_by_sessionid(session_id: String, db_pool: Pool<MySql
 }
 
 pub async fn check_if_session_exists(session_id: SessionId, db_pool: Pool<MySql>) -> bool {
-    return if let Ok(result) = sqlx::query("SELECT (1) FROM session WHERE sessionid=(?)")
-        .bind(session_id.session_id)
-        .execute(&db_pool)
-        .await
-    {
-        true
+    println!("asf");
+    if session_id.session_id.len() > 0 {
+        let result = sqlx::query("SELECT (1) FROM session WHERE sessionid=(?)")
+            .bind(session_id.session_id.to_string())
+            .fetch_one(&db_pool)
+            .await
+            .unwrap();
+        let a: String = result.get("sessionid");
+        return if a.eq_ignore_ascii_case(session_id.session_id.as_str()) {
+            true
+        } else {
+            false
+        }
     } else {
         false
-    };
+    }
 }
 
 pub async fn check_if_session_exists_with_user_id(user_id: i16, session_id: SessionId, db_pool: Pool<MySql>) -> bool {
