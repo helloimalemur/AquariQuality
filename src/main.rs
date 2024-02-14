@@ -64,7 +64,7 @@ impl AppState {
 
 #[actix_web::main] // or #[tokio::main]
 async fn main() -> std::io::Result<()> {
-    // let _ = start_front_end().await;
+    let _ = start_front_end().await;
 
 
     let settings = Config::builder()
