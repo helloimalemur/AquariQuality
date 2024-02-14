@@ -142,16 +142,35 @@ pub async fn check_user_exist_with_password_hash(user_email: String, user_passwo
 
     // let password_hash = create_password_hash(user_password.clone(), "spiffy".to_string());
 
-    if let Ok(query_result) = sqlx::query("SELECT email,password FROM user WHERE email LIKE (?) AND password LIKE (?)")
+    println!("try");
+
+    println!("{}", user_email);
+    println!("{}", user_password);
+
+    let query_result = sqlx::query("SELECT email,password FROM user WHERE email LIKE (?) AND password LIKE (?)")
         .bind(user_email.clone())
         .bind(user_password.clone())
         .fetch_one(&*db_pool)
-        .await
-    {
-        if user_email.eq_ignore_ascii_case(query_result.get("email")) && user_password.eq_ignore_ascii_case(query_result.get("password")) {
+        .await;
+
+
+    println!("{:#?}", query_result);
+
+    if query_result.is_ok() {
+        let result = query_result.unwrap();
+
+        let email: String = result.get(0);
+        let password: String = result.get(1);
+
+        println!("{}", email);
+        println!("{}", password);
+
+        if user_password.eq_ignore_ascii_case(result.get(1)) {
             user_exists_and_password = true;
+            println!("success: {}", user_exists_and_password);
         }
     }
+
     user_exists_and_password
 }
 

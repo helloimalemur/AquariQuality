@@ -1,5 +1,5 @@
 use crate::api_keys::is_key_valid;
-use crate::entities::user::{check_user_exist, check_user_exist_with_password_hash, create_user, User, UserRequest};
+use crate::entities::user::{check_user_exist, check_user_exist_with_password_hash, create_password_hash, create_user, User, UserRequest};
 use crate::AppState;
 use actix_web::error::ErrorBadRequest;
 use actix_web::web::{Data, Payload};
@@ -83,13 +83,17 @@ pub async fn login_user_route(
             // body is loaded, now we can deserialize serde-json
             if let Ok(obj) = serde_json::from_slice::<LoginRequest>(&body) {
                 let login_req = obj.clone();
+                let password_hash = create_password_hash(obj.password, "spiffy".to_string());
                 let login_request = LoginRequest {
                     email: obj.email,
-                    password: obj.password,
+                    password: password_hash,
                 };
-                // println!("{:#?}", login_request.clone());
+
+
+
+                println!("{:#?}", login_request.clone());
                 // verify user exists
-                let user_exists = check_user_exist_with_password_hash(login_req.email.clone(), login_req.password.clone(), data.clone()).await;
+                let user_exists = check_user_exist_with_password_hash(login_req.email.clone(), login_request.password.clone(), data.clone()).await;
                 // todo()! check user password
                 if user_exists {
                     // process login and return session_id
@@ -149,11 +153,14 @@ pub async fn create_session(
     let mut app_state = data.lock();
     let mut db_pool = app_state.as_mut().unwrap().db_pool.lock().unwrap();
 
+    println!("{:#?}", "try create session");
     // query user from db using login request
     if let Ok(user) = get_user_from_login_request(user_login_request, db_pool.clone()).await {
         // create session token
         let new_session_id = generate_jwt_session_id(user.user_id).await;
 
+
+        println!("{:#?}", "try delete session");
         // delete any old sessions prior to creating new session
         delete_session_by_userid(user.user_id, db_pool.clone()).await;
 
@@ -161,15 +168,44 @@ pub async fn create_session(
         let email = user.email.clone();
 
 
-        if let Ok(query_result) =
-            sqlx::query("INSERT INTO session (userid,name,email,sessionid) VALUES (?,?,?,?)")
-                .bind(user.user_id)
-                .bind(user.name)
-                .bind(user.email)
-                .bind(new_session_id.clone())
-                .execute(&*db_pool)
-                .await
-        {
+        println!("{:#?}", "try insert session");
+        let query_result = sqlx::query("INSERT INTO session (userid,name,email,sessionid) VALUES (?,?,?,?)")
+            .bind(user.user_id)
+            .bind(user.name)
+            .bind(user.email)
+            .bind(new_session_id.clone())
+            .execute(&*db_pool)
+            .await;
+
+        println!("{:#?}", query_result);
+
+        // if query_result.is_ok() {
+        //     println!("{:#?}", query_result);
+        // }
+
+
+        // if let Ok(query_result) =
+        //     sqlx::query("INSERT INTO session (userid,name,email,sessionid) VALUES (?,?,?,?)")
+        //         .bind(user.user_id)
+        //         .bind(user.name)
+        //         .bind(user.email)
+        //         .bind(new_session_id.clone())
+        //         .execute(&*db_pool)
+        //         .await
+        // {
+        //     println!(
+        //         "SESSION CREATED :: {} :: {} :: {}",
+        //         userid,
+        //         email,
+        //         new_session_id.clone()
+        //     );
+        //     new_session_id.to_string()
+        // } else {
+        //     "null".to_string()
+        // }
+
+
+        if true {
             println!(
                 "SESSION CREATED :: {} :: {} :: {}",
                 userid,
