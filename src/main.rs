@@ -3,6 +3,7 @@
 mod api_keys;
 mod entities;
 mod middleware;
+mod frontend;
 
 use crate::api_keys::{create_api_key, delete_api_key, is_key_valid, load_keys_from_file};
 use crate::entities::parameter::{
