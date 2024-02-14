@@ -1,5 +1,10 @@
 # AquariQuality
 
+# deps
+```shell
+pacman -S xdo xdotool base-devel
+```
+
 ```shell
 ## Bring your own SQL server;
 export DOCKER_MARIADB_DBHOST="127.0.0.1";

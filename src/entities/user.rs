@@ -1,3 +1,4 @@
+use std::io::Cursor;
 use crate::api_keys::is_key_valid;
 use crate::entities::tank::Tank;
 use crate::AppState;
@@ -8,6 +9,9 @@ use futures_util::StreamExt;
 use rand::{random, Rng};
 use sqlx::{MySql, Pool, Row};
 use std::sync::{Mutex, MutexGuard};
+use base64::Engine;
+use magic_crypt::generic_array::typenum::U256;
+use magic_crypt::MagicCryptTrait;
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct User {
@@ -76,7 +80,7 @@ pub async fn create_user_route(
                     tanks: vec![],
                 };
 
-                // println!("{:#?}", new_user.clone());
+                println!("{:#?}", new_user.clone());
                 let user_exists = check_user_exist(user_req.email, data.clone()).await;
                 if !user_exists {
                     create_user(new_user.clone(), data.clone()).await;
@@ -104,16 +108,18 @@ pub async fn check_user_exist(user_email: String, mut data: Data<Mutex<AppState>
 
     // todo()! hash password
 
-    let mut query_result_string = String::new();
-    if let Ok(query_result_2) = sqlx::query("SELECT email FROM user WHERE email LIKE (?)")
-        .bind(user_email)
+    let query_result= sqlx::query("SELECT email FROM user WHERE email LIKE (?)")
+        .bind(user_email.clone())
         .fetch_one(&*db_pool)
-        .await
-    {
-        query_result_string = query_result_2.get("email");
-        if !query_result_string.is_empty() {
+        .await;
+    if query_result.is_ok() {
+        let row1 = query_result.unwrap();
+        let email: String = row1.get("email");
+        if email.eq_ignore_ascii_case(user_email.clone().as_str()) {
             user_exists = true;
         }
+    } else {
+        user_exists = false;
     }
     // println!("user exists: {}", user_exists);
     user_exists
@@ -124,12 +130,13 @@ pub async fn check_user_exist_with_password_hash(user_email: String, user_passwo
     let mut user_exists_and_password: bool = false;
     let mut app_state = data.lock();
     let mut db_pool = app_state.as_mut().unwrap().db_pool.lock().unwrap();
-    let mut settings_map = app_state.as_mut().unwrap().settings.lock().unwrap();
+    let mut sett_state = data.lock();
+    let mut settings_map = sett_state.as_mut().unwrap().settings.lock().unwrap();
 
     let hash_key = settings_map.get("hash_key").unwrap();
 
     // todo()! hash password
-    let password_hash = create_password_hash(user_password.clone(), hash_key);
+    let password_hash = create_password_hash(user_password.clone(), hash_key.clone());
 
     if let Ok(query_result) = sqlx::query("SELECT email,password FROM user WHERE email LIKE (?) AND password LIKE (?)")
         .bind(user_email.clone())
@@ -144,27 +151,40 @@ pub async fn check_user_exist_with_password_hash(user_email: String, user_passwo
     user_exists_and_password
 }
 
-pub fn create_password_hash(password: String, hash_key: &String) -> String {
-    // todo!()
-    password
+pub fn create_password_hash(password: String, hash_key: String) -> String {
+
+    let mut mc = magic_crypt::new_magic_crypt!(hash_key, 256);
+
+    let mut reader = Cursor::new(password);
+    let mut writer = Vec::new();
+    mc.encrypt_reader_to_writer2::<U256>(&mut reader, &mut writer)
+        .unwrap();
+    let encrypted = base64::engine::general_purpose::STANDARD.encode(&writer);
+
+    encrypted
 }
 
 pub async fn create_user(user: User, data: Data<Mutex<AppState>>) {
     let mut app_state = data.lock();
     let mut db_pool = app_state.as_mut().unwrap().db_pool.lock().unwrap();
+    let mut sett_state = data.lock();
+    let mut settings_map = sett_state.as_mut().unwrap().settings.lock().unwrap();
+
+    let hash_key = settings_map.get("hash_key").unwrap();
+
+    let password_hash = create_password_hash(user.password.clone(), hash_key.clone());
     let is_closed = db_pool.is_closed();
     // println!("Database connected: {}", !is_closed);
 
-    // todo()! hash password
+    // todo()! troubleshoot
 
-    let password_hash = create_password_hash(user.password.clone(), );
 
     let query_result =
         sqlx::query("INSERT INTO user (userid, name, email, password) VALUES (?,?,?,?)")
-            .bind(user.user_id)
+            .bind(user.user_id as u16)
             .bind(user.name)
             .bind(user.email)
-            .bind(password_hash)
+            .bind(password_hash.clone())
             .execute(&*db_pool)
             .await
             .unwrap();
