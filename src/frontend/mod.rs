@@ -14,7 +14,6 @@ pub async fn start_front_end() {
     });
 }
 
-
 // #[cfg(test)]
 // mod tests {
 //     use crate::frontend::start_front_end;

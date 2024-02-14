@@ -1,14 +1,16 @@
 use crate::api_keys::is_key_valid;
+use crate::entities::session::{
+    check_if_session_exists, check_if_session_exists_with_user_id, SessionId,
+};
 use crate::entities::tank::Tank;
 use crate::AppState;
-use actix_web::web::{BytesMut, Data};
-use actix_web::{HttpRequest, web};
-use sqlx::{MySql, Pool};
-use std::sync::Mutex;
 use actix_web::cookie::Expiration::Session;
 use actix_web::error::ErrorBadRequest;
+use actix_web::web::{BytesMut, Data};
+use actix_web::{web, HttpRequest};
 use futures_util::StreamExt;
-use crate::entities::session::{check_if_session_exists, check_if_session_exists_with_user_id, SessionId};
+use sqlx::{MySql, Pool};
+use std::sync::Mutex;
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct Parameter {
@@ -83,9 +85,9 @@ pub async fn create_parameter_route(
             };
 
             // let session_exists = check_if_session_exists(SessionId::new(param_request.session_id), db_pool.clone()).await;
-            let session_exists = check_if_session_exists(SessionId::new(param_request.session_id), data.clone()).await;
-
-
+            let session_exists =
+                check_if_session_exists(SessionId::new(param_request.session_id), data.clone())
+                    .await;
 
             println!("{}", session_exists);
 

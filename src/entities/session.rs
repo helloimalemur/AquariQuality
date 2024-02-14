@@ -1,5 +1,8 @@
 use crate::api_keys::is_key_valid;
-use crate::entities::user::{check_user_exist, check_user_exist_with_password_hash, create_password_hash, create_user, User, UserRequest};
+use crate::entities::user::{
+    check_user_exist, check_user_exist_with_password_hash, create_password_hash, create_user, User,
+    UserRequest,
+};
 use crate::AppState;
 use actix_web::error::ErrorBadRequest;
 use actix_web::web::{Data, Payload};
@@ -89,11 +92,14 @@ pub async fn login_user_route(
                     password: password_hash,
                 };
 
-
-
                 // println!("{:#?}", login_request.clone());
                 // verify user exists
-                let user_exists = check_user_exist_with_password_hash(login_req.email.clone(), login_request.password.clone(), data.clone()).await;
+                let user_exists = check_user_exist_with_password_hash(
+                    login_req.email.clone(),
+                    login_request.password.clone(),
+                    data.clone(),
+                )
+                .await;
                 // todo()! check user password
                 if user_exists {
                     // process login and return session_id
@@ -161,7 +167,6 @@ pub async fn create_session(
     // query user from db using login request
     let user_query = get_user_from_login_request(user_login_request, db_pool.clone()).await;
 
-
     // println!("{:#?}", user_query);
 
     if user_query.is_ok() {
@@ -170,7 +175,6 @@ pub async fn create_session(
         // create session token
         let new_session_id = generate_jwt_session_id(user.user_id).await;
 
-
         // println!("{:#?}", "try delete session");
         // delete any old sessions prior to creating new session
         delete_session_by_userid(user.user_id, db_pool.clone()).await;
@@ -178,15 +182,15 @@ pub async fn create_session(
         let userid = user.user_id.clone();
         let email = user.email.clone();
 
-
         // println!("{:#?}", "try insert session");
-        let query_result = sqlx::query("INSERT INTO session (userid,name,email,sessionid) VALUES (?,?,?,?)")
-            .bind(user.user_id)
-            .bind(user.name)
-            .bind(user.email)
-            .bind(new_session_id.clone())
-            .execute(&*db_pool)
-            .await;
+        let query_result =
+            sqlx::query("INSERT INTO session (userid,name,email,sessionid) VALUES (?,?,?,?)")
+                .bind(user.user_id)
+                .bind(user.name)
+                .bind(user.email)
+                .bind(new_session_id.clone())
+                .execute(&*db_pool)
+                .await;
 
         // println!("{:#?}", query_result);
 
@@ -207,7 +211,6 @@ async fn generate_jwt_session_id(user_id: i16) -> String {
     let temp_new_session_id: u128 = rand.gen();
     temp_new_session_id.to_string()
 }
-
 
 // curl -XPOST -H'x-api-key: omganotherone' localhost:8080/logout/ -d '{"email":"johhny@mail.com","session_id":"password"}'
 pub async fn logout_user_route(
@@ -251,8 +254,11 @@ pub async fn logout_user_route(
                 let user_exists = check_user_exist(logout_rq.email.clone(), data.clone()).await;
                 // let mut app_state = data.lock();
                 // let mut db_pool = app_state.as_mut().unwrap().db_pool.lock().unwrap();
-                let user_session_exists = check_if_session_exists(SessionId::new(logout_rq.session_id.clone()), data.clone()).await;
-
+                let user_session_exists = check_if_session_exists(
+                    SessionId::new(logout_rq.session_id.clone()),
+                    data.clone(),
+                )
+                .await;
 
                 if user_exists && user_session_exists {
                     // process login
@@ -324,7 +330,6 @@ pub async fn delete_session_by_sessionid(session_id: String, data: Data<Mutex<Ap
         .await
         .is_ok();
 
-
     if query_result {
         println!("SESSION DELETED :: {}", session_id);
     }
@@ -354,14 +359,17 @@ pub async fn check_if_session_exists(session_id: SessionId, data: Data<Mutex<App
             }
         } else {
             false
-        }
-
+        };
     } else {
         false
     }
 }
 
-pub async fn check_if_session_exists_with_user_id(user_id: i16, session_id: SessionId, db_pool: Pool<MySql>) -> bool {
+pub async fn check_if_session_exists_with_user_id(
+    user_id: i16,
+    session_id: SessionId,
+    db_pool: Pool<MySql>,
+) -> bool {
     println!("{} - {}", user_id, session_id.session_id);
     let result = sqlx::query("SELECT (1) FROM session WHERE sessionid=(?) AND userid=(?)")
         .bind(session_id.session_id)
@@ -370,13 +378,10 @@ pub async fn check_if_session_exists_with_user_id(user_id: i16, session_id: Sess
         .await
         .unwrap();
 
-
     // let queried_sessionid: String = result.get("sessionid").unwrap();
     // println!("{}", queried_sessionid);
 
-
     // let queried_user_id: i16 = result.get("userid").unwrap();
-
 
     true
 }
@@ -426,7 +431,7 @@ mod tests {
         let state = Data::new(Mutex::new(AppState::new(
             load_keys_from_file(),
             db_pool.clone(),
-            settings_map
+            settings_map,
         )));
         state
     }

@@ -2,8 +2,8 @@
 // curl -XGET -H'x-api-key: headervalue' localhost:8080/hello/asdf
 mod api_keys;
 mod entities;
-mod middleware;
 mod frontend;
+mod middleware;
 
 use crate::api_keys::{create_api_key, delete_api_key, is_key_valid, load_keys_from_file};
 use crate::entities::parameter::{
@@ -12,6 +12,7 @@ use crate::entities::parameter::{
 use crate::entities::session::{login_user_route, logout_user_route};
 use crate::entities::tank::{create_tank_route, delete_tank_route, modify_tank_route};
 use crate::entities::user::{create_user_route, delete_user_route, modify_user_route};
+use crate::frontend::start_front_end;
 use crate::middleware::api_key;
 use actix_files::NamedFile;
 use actix_web::dev::Service;
@@ -22,7 +23,6 @@ use config::Config;
 use sqlx::{MySql, MySqlPool, Pool};
 use std::collections::HashMap;
 use std::sync::Mutex;
-use crate::frontend::start_front_end;
 
 async fn root(data: Data<Mutex<AppState>>, req: HttpRequest) -> String {
     if is_key_valid(
@@ -49,11 +49,15 @@ async fn root(data: Data<Mutex<AppState>>, req: HttpRequest) -> String {
 pub struct AppState {
     api_key: Mutex<Vec<String>>,
     db_pool: Mutex<Pool<MySql>>,
-    settings: Mutex<HashMap<String,String>>
+    settings: Mutex<HashMap<String, String>>,
 }
 
 impl AppState {
-    pub fn new(keys: Vec<String>, db_pool: Pool<MySql>, settings_map: HashMap<String, String>) -> AppState {
+    pub fn new(
+        keys: Vec<String>,
+        db_pool: Pool<MySql>,
+        settings_map: HashMap<String, String>,
+    ) -> AppState {
         AppState {
             api_key: Mutex::new(keys),
             db_pool: Mutex::new(db_pool),
@@ -91,11 +95,10 @@ async fn main() -> std::io::Result<()> {
         let _ = start_front_end().await;
     }
 
-
     let state = Data::new(Mutex::new(AppState::new(
         load_keys_from_file(),
         db_pool.clone(),
-        settings_map.clone()
+        settings_map.clone(),
     )));
 
     HttpServer::new(move || {

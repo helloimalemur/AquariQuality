@@ -1,17 +1,17 @@
-use std::io::Cursor;
 use crate::api_keys::is_key_valid;
 use crate::entities::tank::Tank;
 use crate::AppState;
 use actix_web::error::ErrorBadRequest;
 use actix_web::web::{Data, Payload};
 use actix_web::{error, web, HttpRequest, HttpResponse};
-use futures_util::StreamExt;
-use rand::{random, Rng};
-use sqlx::{MySql, Pool, Row};
-use std::sync::{Mutex, MutexGuard};
 use base64::Engine;
+use futures_util::StreamExt;
 use magic_crypt::generic_array::typenum::U256;
 use magic_crypt::MagicCryptTrait;
+use rand::{random, Rng};
+use sqlx::{MySql, Pool, Row};
+use std::io::Cursor;
+use std::sync::{Mutex, MutexGuard};
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct User {
@@ -67,8 +67,6 @@ pub async fn create_user_route(
                 body.extend_from_slice(&chunk);
             }
 
-
-
             // body is loaded, now we can deserialize serde-json
             if let Ok(obj) = serde_json::from_slice::<UserRequest>(&body) {
                 let mut rand = rand::thread_rng();
@@ -110,8 +108,7 @@ pub async fn check_user_exist(user_email: String, mut data: Data<Mutex<AppState>
     let mut app_state = data.lock();
     let mut db_pool = app_state.as_mut().unwrap().db_pool.lock().unwrap();
 
-
-    let query_result= sqlx::query("SELECT email FROM user WHERE email LIKE (?)")
+    let query_result = sqlx::query("SELECT email FROM user WHERE email LIKE (?)")
         .bind(user_email.clone())
         .fetch_one(&*db_pool)
         .await;
@@ -128,8 +125,11 @@ pub async fn check_user_exist(user_email: String, mut data: Data<Mutex<AppState>
     user_exists
 }
 
-
-pub async fn check_user_exist_with_password_hash(user_email: String, user_password: String, mut data: Data<Mutex<AppState>>) -> bool {
+pub async fn check_user_exist_with_password_hash(
+    user_email: String,
+    user_password: String,
+    mut data: Data<Mutex<AppState>>,
+) -> bool {
     let mut user_exists_and_password: bool = false;
     let mut app_state = data.lock();
     let mut db_pool = app_state.as_mut().unwrap().db_pool.lock().unwrap();
@@ -139,7 +139,6 @@ pub async fn check_user_exist_with_password_hash(user_email: String, user_passwo
     // let mut settings_map = sett_state.unwrap().settings.lock().unwrap();
     // let hash_key = settings_map.get("hash_key").unwrap();
 
-
     // let password_hash = create_password_hash(user_password.clone(), "spiffy".to_string());
 
     // println!("try");
@@ -147,12 +146,12 @@ pub async fn check_user_exist_with_password_hash(user_email: String, user_passwo
     // println!("{}", user_email);
     // println!("{}", user_password);
 
-    let query_result = sqlx::query("SELECT email,password FROM user WHERE email LIKE (?) AND password LIKE (?)")
-        .bind(user_email.clone())
-        .bind(user_password.clone())
-        .fetch_one(&*db_pool)
-        .await;
-
+    let query_result =
+        sqlx::query("SELECT email,password FROM user WHERE email LIKE (?) AND password LIKE (?)")
+            .bind(user_email.clone())
+            .bind(user_password.clone())
+            .fetch_one(&*db_pool)
+            .await;
 
     // println!("{:#?}", query_result);
 
@@ -175,7 +174,6 @@ pub async fn check_user_exist_with_password_hash(user_email: String, user_passwo
 }
 
 pub fn create_password_hash(password: String, hash_key: String) -> String {
-
     let mut mc = magic_crypt::new_magic_crypt!(hash_key, 256);
 
     let mut reader = Cursor::new(password);
@@ -198,11 +196,9 @@ pub async fn create_user(user: User, data: Data<Mutex<AppState>>) {
     // let mut settings_map = sett_state.unwrap().settings.lock().unwrap();
     // let hash_key = settings_map.get("hash_key").unwrap();
 
-
     let password_hash = create_password_hash(user.password.clone(), "spiffy".to_string());
     let is_closed = db_pool.is_closed();
     // println!("Database connected: {}", !is_closed);
-
 
     let query_result =
         sqlx::query("INSERT INTO user (userid, name, email, password) VALUES (?,?,?,?)")
@@ -315,6 +311,9 @@ mod tests {
 
     #[test]
     fn test_create_password_hash() {
-        println!("{}", create_password_hash("password".to_string(), "spiffy".to_string()));
+        println!(
+            "{}",
+            create_password_hash("password".to_string(), "spiffy".to_string())
+        );
     }
 }
