@@ -325,7 +325,10 @@ pub async fn check_if_session_exists_with_user_id(user_id: i16, session_id: Sess
         .unwrap();
 
 
-    // let queried_sessionid: String = result.get("sessionid").unwrap().to_string();
+    // let queried_sessionid: String = result.get("sessionid").unwrap();
+    // println!("{}", queried_sessionid);
+
+
     // let queried_user_id: i16 = result.get("userid").unwrap();
 
 
