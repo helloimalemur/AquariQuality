@@ -47,13 +47,15 @@ async fn root(data: Data<Mutex<AppState>>, req: HttpRequest) -> String {
 pub struct AppState {
     api_key: Mutex<Vec<String>>,
     db_pool: Mutex<Pool<MySql>>,
+    settings: Mutex<HashMap<String,String>>
 }
 
 impl AppState {
-    pub fn new(keys: Vec<String>, db_pool: Pool<MySql>) -> AppState {
+    pub fn new(keys: Vec<String>, db_pool: Pool<MySql>, settings_map: HashMap<String, String>) -> AppState {
         AppState {
             api_key: Mutex::new(keys),
             db_pool: Mutex::new(db_pool),
+            settings: Mutex::new(settings_map),
         }
     }
 }
@@ -80,6 +82,7 @@ async fn main() -> std::io::Result<()> {
     let state = Data::new(Mutex::new(AppState::new(
         load_keys_from_file(),
         db_pool.clone(),
+        settings_map.clone()
     )));
 
     HttpServer::new(move || {
