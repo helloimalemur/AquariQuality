@@ -34,6 +34,7 @@ CREATE TABLE `user` (
     `userid` INT NOT NULL,
     `name` VARCHAR(255) NOT NULL,
     `email` VARCHAR(255) NOT NULL,
+    `password` VARCHAR(255) NOT NULL,
     PRIMARY KEY (`userid`)
 ) ENGINE=InnoDB;
 ```
@@ -43,7 +44,7 @@ CREATE TABLE `tank` (
     `userid` INT NOT NULL,
     `tankid` INT NOT NULL,
     `name` VARCHAR(255) NOT NULL,
-    `size_gallons` VARCHAR(255) NOT NULL,
+    `size_gallons` INT NOT NULL,
     `height` INT,
     `length` INT,
     `width` INT,
@@ -55,22 +56,24 @@ CREATE TABLE `tank` (
 
 ```sql
 CREATE TABLE `parameter` (
-    `userid` INT NOT NULL,
-    `tankid` INT NOT NULL,
-    `ph` INT,
-    `kh` INT,
-    PRIMARY KEY (`userid`)
+     `userid` INT NOT NULL,
+     `ph` FLOAT,
+     `kh` FLOAT,
+     `ammonia` FLOAT,
+     `nitrite` FLOAT,
+     `nitrate` FLOAT,
+     PRIMARY KEY (`userid`)
 ) ENGINE=InnoDB;
 ```
 
 ```sql
 CREATE TABLE `fish` (
-`userid` INT NOT NULL,
-`tankid` INT NOT NULL,
-`fishid` INT NOT NULL,
-`name` VARCHAR(255) NOT NULL,
-`species` VARCHAR(255) NOT NULL,
-`qty` INT,
-PRIMARY KEY (`fishid`)
+    `userid` INT NOT NULL,
+    `tankid` INT NOT NULL,
+    `fishid` INT NOT NULL,
+    `name` VARCHAR(255) NOT NULL,
+    `species` VARCHAR(255) NOT NULL,
+    `qty` INT,
+    PRIMARY KEY (`fishid`)
 ) ENGINE=InnoDB;
 ```
