@@ -157,7 +157,7 @@ pub async fn create_session(
         // delete any old sessions prior to creating new session
         delete_session_by_userid(user.user_id, db_pool.clone()).await;
 
-        let userid = user.user_id.clone() as i32;
+        let userid = user.user_id.clone();
         let email = user.email.clone();
 
 
