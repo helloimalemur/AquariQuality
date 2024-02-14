@@ -121,27 +121,31 @@ pub async fn check_user_exist(user_email: String, mut data: Data<Mutex<AppState>
 
 
 pub async fn check_user_exist_with_password_hash(user_email: String, user_password: String, mut data: Data<Mutex<AppState>>) -> bool {
-    let mut user_exists: bool = false;
+    let mut user_exists_and_password: bool = false;
     let mut app_state = data.lock();
     let mut db_pool = app_state.as_mut().unwrap().db_pool.lock().unwrap();
 
     // todo()! hash password
+    let password_hash = create_password_hash(user_password.clone());
 
-    let mut query_result_string = String::new();
-    if let Ok(query_result_2) = sqlx::query("SELECT email FROM user WHERE email LIKE (?) AND password LIKE (?)")
-        .bind(user_email)
-        .bind(user_password)
+    if let Ok(query_result) = sqlx::query("SELECT email,password FROM user WHERE email LIKE (?) AND password LIKE (?)")
+        .bind(user_email.clone())
+        .bind(user_password.clone())
         .fetch_one(&*db_pool)
         .await
     {
-        query_result_string = query_result_2.get("email");
-        if !query_result_string.is_empty() {
-            user_exists = true;
+        if user_email.eq_ignore_ascii_case(query_result.get("email")) && password_hash.eq_ignore_ascii_case(query_result.get("password")) {
+            user_exists_and_password = true;
         }
     }
-    // println!("user exists: {}", user_exists);
-    user_exists
+    user_exists_and_password
 }
+
+pub fn create_password_hash(password: String) -> String {
+    // todo!()
+    password
+}
+
 pub async fn create_user(user: User, data: Data<Mutex<AppState>>) {
     let mut app_state = data.lock();
     let mut db_pool = app_state.as_mut().unwrap().db_pool.lock().unwrap();
@@ -150,13 +154,14 @@ pub async fn create_user(user: User, data: Data<Mutex<AppState>>) {
 
     // todo()! hash password
 
+    let password_hash = create_password_hash(user.password.clone());
 
     let query_result =
         sqlx::query("INSERT INTO user (userid, name, email, password) VALUES (?,?,?,?)")
             .bind(user.user_id)
             .bind(user.name)
             .bind(user.email)
-            .bind(user.password)
+            .bind(password_hash)
             .execute(&*db_pool)
             .await
             .unwrap();

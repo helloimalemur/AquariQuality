@@ -1,5 +1,5 @@
 use crate::api_keys::is_key_valid;
-use crate::entities::user::{check_user_exist, create_user, User, UserRequest};
+use crate::entities::user::{check_user_exist, check_user_exist_with_password_hash, create_user, User, UserRequest};
 use crate::AppState;
 use actix_web::error::ErrorBadRequest;
 use actix_web::web::{Data, Payload};
@@ -89,7 +89,7 @@ pub async fn login_user_route(
                 };
                 // println!("{:#?}", login_request.clone());
                 // verify user exists
-                let user_exists = check_user_exist(login_req.email.clone(), data.clone()).await;
+                let user_exists = check_user_exist_with_password_hash(login_req.email.clone(), login_req.password.clone(), data.clone()).await;
                 // todo()! check user password
                 if user_exists {
                     // process login and return session_id
