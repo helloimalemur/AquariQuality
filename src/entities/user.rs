@@ -286,12 +286,13 @@ pub async fn modify_user_route(
 
 pub fn modify_user(user: User, db_pool: Pool<MySql>) {}
 
-// #[cfg(test)]
-// mod tests {
-//     use crate::frontend::start_front_end;
-//
-//     #[tokio::test]
-//     fn front_end() {
-//         start_front_end();
-//     }
-// }
+#[cfg(test)]
+mod tests {
+    use crate::entities::user::create_password_hash;
+    use crate::frontend::start_front_end;
+
+    #[test]
+    fn test_create_password_hash() {
+        println!("{}", create_password_hash("password".to_string(), "spiffy".to_string()));
+    }
+}
