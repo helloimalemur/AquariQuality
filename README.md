@@ -77,3 +77,13 @@ CREATE TABLE `fish` (
     PRIMARY KEY (`fishid`)
 ) ENGINE=InnoDB;
 ```
+
+```sql
+CREATE TABLE `session` (
+`userid` INT NOT NULL,
+`name` VARCHAR(255) NOT NULL,
+`email` VARCHAR(255) NOT NULL,
+`sessionid` VARCHAR(255) NOT NULL,
+PRIMARY KEY (`sessionid`)
+) ENGINE=InnoDB;
+```
