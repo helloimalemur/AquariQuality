@@ -130,11 +130,13 @@ async fn get_user_from_login_request(
     db_pool: Pool<MySql>,
 ) -> Result<User, sqlx::Error> {
     // println!("{}", "attempting login");
+    println!("{:#?}", "get user from login req");
+
     let mut user = sqlx::query("SELECT * FROM user WHERE email LIKE (?) AND password LIKE (?)")
         .bind(user_login_request.email)
         .bind(user_login_request.password)
         .map(|row: MySqlRow| User {
-            user_id: row.get(0),
+            user_id: 0,
             name: row.get(1),
             email: row.get(2),
             password: row.get(3),
@@ -155,7 +157,14 @@ pub async fn create_session(
 
     println!("{:#?}", "try create session");
     // query user from db using login request
-    if let Ok(user) = get_user_from_login_request(user_login_request, db_pool.clone()).await {
+    let user_query = get_user_from_login_request(user_login_request, db_pool.clone()).await;
+
+
+    println!("{:#?}", user_query);
+
+    if user_query.is_ok() {
+        let user = user_query.unwrap();
+
         // create session token
         let new_session_id = generate_jwt_session_id(user.user_id).await;
 
@@ -179,45 +188,15 @@ pub async fn create_session(
 
         println!("{:#?}", query_result);
 
-        // if query_result.is_ok() {
-        //     println!("{:#?}", query_result);
-        // }
-
-
-        // if let Ok(query_result) =
-        //     sqlx::query("INSERT INTO session (userid,name,email,sessionid) VALUES (?,?,?,?)")
-        //         .bind(user.user_id)
-        //         .bind(user.name)
-        //         .bind(user.email)
-        //         .bind(new_session_id.clone())
-        //         .execute(&*db_pool)
-        //         .await
-        // {
-        //     println!(
-        //         "SESSION CREATED :: {} :: {} :: {}",
-        //         userid,
-        //         email,
-        //         new_session_id.clone()
-        //     );
-        //     new_session_id.to_string()
-        // } else {
-        //     "null".to_string()
-        // }
-
-
-        if true {
-            println!(
-                "SESSION CREATED :: {} :: {} :: {}",
-                userid,
-                email,
-                new_session_id.clone()
-            );
-            new_session_id.to_string()
-        } else {
-            "null".to_string()
-        }
+        println!(
+            "SESSION CREATED :: {} :: {} :: {}",
+            userid,
+            email,
+            new_session_id.clone()
+        );
+        new_session_id.to_string()
     } else {
-        return "null".to_string();
+        "null".to_string()
     }
 }
 
