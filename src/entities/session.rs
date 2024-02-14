@@ -316,16 +316,20 @@ pub async fn check_if_session_exists(session_id: SessionId, db_pool: Pool<MySql>
 }
 
 pub async fn check_if_session_exists_with_user_id(user_id: i16, session_id: SessionId, db_pool: Pool<MySql>) -> bool {
-    return if let Ok(result) = sqlx::query("SELECT (1) FROM session WHERE sessionid=(?) AND userid=(?)")
+    println!("{} - {}", user_id, session_id.session_id);
+    let result = sqlx::query("SELECT (1) FROM session WHERE sessionid=(?) AND userid=(?)")
         .bind(session_id.session_id)
         .bind(user_id)
-        .execute(&db_pool)
+        .fetch_all(&db_pool)
         .await
-    {
-        true
-    } else {
-        false
-    };
+        .unwrap();
+
+
+    // let queried_sessionid: String = result.get("sessionid").unwrap().to_string();
+    // let queried_user_id: i16 = result.get("userid").unwrap();
+
+
+    true
 }
 
 #[cfg(test)]
