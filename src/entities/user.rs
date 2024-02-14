@@ -102,6 +102,8 @@ pub async fn check_user_exist(user_email: String, mut data: Data<Mutex<AppState>
     let mut app_state = data.lock();
     let mut db_pool = app_state.as_mut().unwrap().db_pool.lock().unwrap();
 
+    // todo()! hash password
+
     let mut query_result_string = String::new();
     if let Ok(query_result_2) = sqlx::query("SELECT email FROM user WHERE email LIKE (?)")
         .bind(user_email)
@@ -117,11 +119,37 @@ pub async fn check_user_exist(user_email: String, mut data: Data<Mutex<AppState>
     user_exists
 }
 
+
+pub async fn check_user_exist_with_password_hash(user_email: String, user_password: String, mut data: Data<Mutex<AppState>>) -> bool {
+    let mut user_exists: bool = false;
+    let mut app_state = data.lock();
+    let mut db_pool = app_state.as_mut().unwrap().db_pool.lock().unwrap();
+
+    // todo()! hash password
+
+    let mut query_result_string = String::new();
+    if let Ok(query_result_2) = sqlx::query("SELECT email FROM user WHERE email LIKE (?) AND password LIKE (?)")
+        .bind(user_email)
+        .bind(user_password)
+        .fetch_one(&*db_pool)
+        .await
+    {
+        query_result_string = query_result_2.get("email");
+        if !query_result_string.is_empty() {
+            user_exists = true;
+        }
+    }
+    // println!("user exists: {}", user_exists);
+    user_exists
+}
 pub async fn create_user(user: User, data: Data<Mutex<AppState>>) {
     let mut app_state = data.lock();
     let mut db_pool = app_state.as_mut().unwrap().db_pool.lock().unwrap();
     let is_closed = db_pool.is_closed();
     // println!("Database connected: {}", !is_closed);
+
+    // todo()! hash password
+
 
     let query_result =
         sqlx::query("INSERT INTO user (userid, name, email, password) VALUES (?,?,?,?)")

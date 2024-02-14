@@ -90,6 +90,7 @@ pub async fn login_user_route(
                 // println!("{:#?}", login_request.clone());
                 // verify user exists
                 let user_exists = check_user_exist(login_req.email.clone(), data.clone()).await;
+                // todo()! check user password
                 if user_exists {
                     // process login and return session_id
                     let session_id = create_session(login_request, data.clone()).await;
