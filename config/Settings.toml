@@ -1,3 +1,4 @@
+frontend_enabled = "true"
 database_url = "mysql://devuser:password@127.0.0.1/aquariquality"
 database_name = "aquariquality"
 #api_key = "asimplekey"

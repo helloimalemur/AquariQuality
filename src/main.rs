@@ -76,12 +76,18 @@ async fn main() -> std::io::Result<()> {
         .get("database_url")
         .expect("could not get database_url from settings");
 
+    let frontend_enabled = settings_map
+        .get("frontend_enabled")
+        .expect("could not get frontend_enabled from settings")
+        .parse::<bool>()
+        .expect("could not get frontend_enabled from settings");
+
     // database connection
     let db_pool = MySqlPool::connect(database_url)
         .await
         .expect("unable to connect to database");
 
-    if !db_pool.is_closed() {
+    if !db_pool.is_closed() && frontend_enabled {
         let _ = start_front_end().await;
     }
 
