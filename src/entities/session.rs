@@ -20,8 +20,14 @@ struct Session {
 }
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
-struct SessionId {
+pub struct SessionId {
     session_id: String,
+}
+
+impl SessionId {
+    pub fn new(string: String) -> SessionId {
+        SessionId { session_id: string }
+    }
 }
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
@@ -298,6 +304,19 @@ pub async fn delete_session_by_sessionid(session_id: String, db_pool: Pool<MySql
 pub async fn check_if_session_exists(session_id: SessionId, db_pool: Pool<MySql>) -> bool {
     return if let Ok(result) = sqlx::query("SELECT (1) FROM session WHERE sessionid=(?)")
         .bind(session_id.session_id)
+        .execute(&db_pool)
+        .await
+    {
+        true
+    } else {
+        false
+    };
+}
+
+pub async fn check_if_session_exists_with_user_id(user_id: i16, session_id: SessionId, db_pool: Pool<MySql>) -> bool {
+    return if let Ok(result) = sqlx::query("SELECT (1) FROM session WHERE sessionid=(?) AND userid=(?)")
+        .bind(session_id.session_id)
+        .bind(user_id)
         .execute(&db_pool)
         .await
     {

@@ -5,12 +5,14 @@ use actix_web::web::{BytesMut, Data};
 use actix_web::{HttpRequest, web};
 use sqlx::{MySql, Pool};
 use std::sync::Mutex;
+use actix_web::cookie::Expiration::Session;
 use actix_web::error::ErrorBadRequest;
 use futures_util::StreamExt;
+use crate::entities::session::{check_if_session_exists, check_if_session_exists_with_user_id, SessionId};
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct Parameter {
-    user_id: i64,
+    user_id: i16,
     ph: f32,
     kh: f32,
     ammmonia: f32,
@@ -21,7 +23,7 @@ pub struct Parameter {
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct ParameterRequest {
     session_id: String,
-    user_id: i64,
+    user_id: i16,
     ph: f32,
     kh: f32,
     ammmonia: f32,
@@ -39,7 +41,7 @@ pub struct ParameterRequest {
 // PRIMARY KEY (`userid`)
 // ) ENGINE=InnoDB;
 
-// curl -XPOST -H'x-api-key: omganotherone' localhost:8080/api/create/parameter/ -d '{ "session_id": "String", "user_id": 441234, "ph": 0.0, "kh": 0.0, "ammmonia": 0.0, "nitrite": 0.0, "nitrate": 0.0}'
+// curl -XPOST -H'x-api-key: omganotherone' localhost:8080/api/create/parameter/ -d '{ "session_id": "String", "user_id": 4412, "ph": 0.0, "kh": 0.0, "ammmonia": 0.0, "nitrite": 0.0, "nitrate": 0.0}'
 pub async fn create_parameter_route(
     // name: web::Path<String>,
     mut payload: web::Payload,
@@ -80,7 +82,16 @@ pub async fn create_parameter_route(
                 nitrate: param_request.nitrate,
             };
 
-            println!("{:#?}", param);
+            let mut app_state = data.lock();
+            let mut db_pool = app_state.as_mut().unwrap().db_pool.lock().unwrap();
+
+            // let session_exists = check_if_session_exists(SessionId::new(param_request.session_id), db_pool.clone()).await;
+            let session_exists = check_if_session_exists_with_user_id(param_request.user_id, SessionId::new(param_request.session_id), db_pool.clone()).await;
+
+
+
+
+            println!("{}", session_exists);
 
             "ok\n".to_string()
         } else {
