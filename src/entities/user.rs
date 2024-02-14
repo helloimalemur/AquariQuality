@@ -84,7 +84,7 @@ pub async fn create_user_route(
                     tanks: vec![],
                 };
 
-                println!("{:#?}", new_user.clone());
+                // println!("{:#?}", new_user.clone());
                 let user_exists = check_user_exist(user_req.email, data.clone()).await;
                 if !user_exists {
                     let _ = create_user(new_user.clone(), data.clone()).await;
@@ -124,7 +124,7 @@ pub async fn check_user_exist(user_email: String, mut data: Data<Mutex<AppState>
     } else {
         user_exists = false;
     }
-    println!("user exists: {}", user_exists);
+    // println!("user exists: {}", user_exists);
     user_exists
 }
 
@@ -142,10 +142,10 @@ pub async fn check_user_exist_with_password_hash(user_email: String, user_passwo
 
     // let password_hash = create_password_hash(user_password.clone(), "spiffy".to_string());
 
-    println!("try");
-
-    println!("{}", user_email);
-    println!("{}", user_password);
+    // println!("try");
+    //
+    // println!("{}", user_email);
+    // println!("{}", user_password);
 
     let query_result = sqlx::query("SELECT email,password FROM user WHERE email LIKE (?) AND password LIKE (?)")
         .bind(user_email.clone())
@@ -154,7 +154,7 @@ pub async fn check_user_exist_with_password_hash(user_email: String, user_passwo
         .await;
 
 
-    println!("{:#?}", query_result);
+    // println!("{:#?}", query_result);
 
     if query_result.is_ok() {
         let result = query_result.unwrap();
@@ -162,8 +162,8 @@ pub async fn check_user_exist_with_password_hash(user_email: String, user_passwo
         let email: String = result.get(0);
         let password: String = result.get(1);
 
-        println!("{}", email);
-        println!("{}", password);
+        // println!("{}", email);
+        // println!("{}", password);
 
         if user_password.eq_ignore_ascii_case(result.get(1)) {
             user_exists_and_password = true;

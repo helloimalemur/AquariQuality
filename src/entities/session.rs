@@ -91,7 +91,7 @@ pub async fn login_user_route(
 
 
 
-                println!("{:#?}", login_request.clone());
+                // println!("{:#?}", login_request.clone());
                 // verify user exists
                 let user_exists = check_user_exist_with_password_hash(login_req.email.clone(), login_request.password.clone(), data.clone()).await;
                 // todo()! check user password
@@ -130,7 +130,7 @@ async fn get_user_from_login_request(
     db_pool: Pool<MySql>,
 ) -> Result<User, sqlx::Error> {
     // println!("{}", "attempting login");
-    println!("{:#?}", "get user from login req");
+    // println!("{:#?}", "get user from login req");
 
     let mut user = sqlx::query("SELECT * FROM user WHERE email LIKE (?) AND password LIKE (?)")
         .bind(user_login_request.email)
@@ -155,12 +155,12 @@ pub async fn create_session(
     let mut app_state = data.lock();
     let mut db_pool = app_state.as_mut().unwrap().db_pool.lock().unwrap();
 
-    println!("{:#?}", "try create session");
+    // println!("{:#?}", "try create session");
     // query user from db using login request
     let user_query = get_user_from_login_request(user_login_request, db_pool.clone()).await;
 
 
-    println!("{:#?}", user_query);
+    // println!("{:#?}", user_query);
 
     if user_query.is_ok() {
         let user = user_query.unwrap();
@@ -169,7 +169,7 @@ pub async fn create_session(
         let new_session_id = generate_jwt_session_id(user.user_id).await;
 
 
-        println!("{:#?}", "try delete session");
+        // println!("{:#?}", "try delete session");
         // delete any old sessions prior to creating new session
         delete_session_by_userid(user.user_id, db_pool.clone()).await;
 
@@ -177,7 +177,7 @@ pub async fn create_session(
         let email = user.email.clone();
 
 
-        println!("{:#?}", "try insert session");
+        // println!("{:#?}", "try insert session");
         let query_result = sqlx::query("INSERT INTO session (userid,name,email,sessionid) VALUES (?,?,?,?)")
             .bind(user.user_id)
             .bind(user.name)
@@ -186,7 +186,7 @@ pub async fn create_session(
             .execute(&*db_pool)
             .await;
 
-        println!("{:#?}", query_result);
+        // println!("{:#?}", query_result);
 
         println!(
             "SESSION CREATED :: {} :: {} :: {}",
