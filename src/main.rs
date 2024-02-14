@@ -22,6 +22,7 @@ use config::Config;
 use sqlx::{MySql, MySqlPool, Pool};
 use std::collections::HashMap;
 use std::sync::Mutex;
+use crate::frontend::start_front_end;
 
 async fn root(data: Data<Mutex<AppState>>, req: HttpRequest) -> String {
     if is_key_valid(
@@ -63,6 +64,9 @@ impl AppState {
 
 #[actix_web::main] // or #[tokio::main]
 async fn main() -> std::io::Result<()> {
+    // let _ = start_front_end().await;
+
+
     let settings = Config::builder()
         .add_source(config::File::with_name("config/Settings"))
         .build()
