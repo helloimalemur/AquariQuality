@@ -285,3 +285,13 @@ pub async fn modify_user_route(
 }
 
 pub fn modify_user(user: User, db_pool: Pool<MySql>) {}
+
+// #[cfg(test)]
+// mod tests {
+//     use crate::frontend::start_front_end;
+//
+//     #[tokio::test]
+//     fn front_end() {
+//         start_front_end();
+//     }
+// }
