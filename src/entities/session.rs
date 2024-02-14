@@ -310,13 +310,17 @@ pub async fn delete_session_by_sessionid(session_id: String, db_pool: Pool<MySql
 pub async fn check_if_session_exists(session_id: SessionId, db_pool: Pool<MySql>) -> bool {
     println!("asf");
     if session_id.session_id.len() > 0 {
-        let result = sqlx::query("SELECT (1) FROM session WHERE sessionid=(?)")
+        let result = sqlx::query("SELECT * FROM session WHERE sessionid=(?)")
             .bind(session_id.session_id.to_string())
-            .fetch_one(&db_pool)
+            .fetch_all(&db_pool)
             .await
             .unwrap();
-        let a: String = result.get("sessionid");
-        return if a.eq_ignore_ascii_case(session_id.session_id.as_str()) {
+        let a = result.get(0).unwrap();
+        println!("{:#?}", a);
+        let b: String = a.get(3);
+        println!("{:#?}", b);
+
+        return if a.len() > 0 {
             true
         } else {
             false
