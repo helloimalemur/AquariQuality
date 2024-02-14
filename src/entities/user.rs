@@ -124,9 +124,12 @@ pub async fn check_user_exist_with_password_hash(user_email: String, user_passwo
     let mut user_exists_and_password: bool = false;
     let mut app_state = data.lock();
     let mut db_pool = app_state.as_mut().unwrap().db_pool.lock().unwrap();
+    let mut settings_map = app_state.as_mut().unwrap().settings.lock().unwrap();
+
+    let hash_key = settings_map.get("hash_key").unwrap();
 
     // todo()! hash password
-    let password_hash = create_password_hash(user_password.clone());
+    let password_hash = create_password_hash(user_password.clone(), hash_key);
 
     if let Ok(query_result) = sqlx::query("SELECT email,password FROM user WHERE email LIKE (?) AND password LIKE (?)")
         .bind(user_email.clone())
@@ -141,7 +144,7 @@ pub async fn check_user_exist_with_password_hash(user_email: String, user_passwo
     user_exists_and_password
 }
 
-pub fn create_password_hash(password: String) -> String {
+pub fn create_password_hash(password: String, hash_key: &String) -> String {
     // todo!()
     password
 }
@@ -154,7 +157,7 @@ pub async fn create_user(user: User, data: Data<Mutex<AppState>>) {
 
     // todo()! hash password
 
-    let password_hash = create_password_hash(user.password.clone());
+    let password_hash = create_password_hash(user.password.clone(), );
 
     let query_result =
         sqlx::query("INSERT INTO user (userid, name, email, password) VALUES (?,?,?,?)")
