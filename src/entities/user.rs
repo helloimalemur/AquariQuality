@@ -309,9 +309,9 @@ mod tests {
 
     #[test]
     fn test_create_password_hash() {
-        println!(
-            "{}",
-            create_password_hash("password".to_string(), "spiffy".to_string())
-        );
+        // println!(
+        //     "{}",
+        //     create_password_hash("password".to_string(), "spiffy".to_string())
+        // );
     }
 }
