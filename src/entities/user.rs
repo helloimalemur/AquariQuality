@@ -197,7 +197,6 @@ pub async fn create_user(user: User, data: Data<Mutex<AppState>>) {
 
     println!("Create user: {}", user.email);
 
-
     let query_result =
         sqlx::query("INSERT INTO user (userid, name, email, password) VALUES (?,?,?,?)")
             .bind(user.user_id as u16)
