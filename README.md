@@ -30,7 +30,7 @@ mariadb -h "$DOCKER_MARIADB_DBHOST" -uroot -p"$DOCKER_MARIADB_DBHOSTPW" -e 'CREA
 mariadb -h "$DOCKER_MARIADB_DBHOST" -uroot -p"$DOCKER_MARIADB_DBHOSTPW" -e 'CREATE TABLE `parameter` (`userid` INT NOT NULL,`ph` FLOAT,`kh` FLOAT,`ammonia` FLOAT,`nitrite` FLOAT,`nitrate` FLOAT,PRIMARY KEY (`userid`)) ENGINE=InnoDB;' aquariquality;
 mariadb -h "$DOCKER_MARIADB_DBHOST" -uroot -p"$DOCKER_MARIADB_DBHOSTPW" -e 'CREATE TABLE `fish` (`userid` INT NOT NULL,`tankid` INT NOT NULL,`fishid` INT NOT NULL,`name` VARCHAR(255) NOT NULL,`species` VARCHAR(255) NOT NULL,`qty` INT,PRIMARY KEY (`fishid`)) ENGINE=InnoDB;' aquariquality;
 mariadb -h "$DOCKER_MARIADB_DBHOST" -uroot -p"$DOCKER_MARIADB_DBHOSTPW" -e 'CREATE TABLE `session` (`userid` INT NOT NULL,`name` VARCHAR(255) NOT NULL,`email` VARCHAR(255) NOT NULL,`sessionid` VARCHAR(255) NOT NULL,PRIMARY KEY (`sessionid`)) ENGINE=InnoDB;' aquariquality;
-
+mariadb -h "$DOCKER_MARIADB_DBHOST" -uroot -p"$DOCKER_MARIADB_DBHOSTPW" -e 'SHOW TABLES;' aquariquality;
 ```
 
 ```sql
