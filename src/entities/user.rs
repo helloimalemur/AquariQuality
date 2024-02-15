@@ -67,13 +67,19 @@ pub async fn create_user_route(
                 body.extend_from_slice(&chunk);
             }
 
+            let mut apps_state = data.lock().unwrap();
+            let settings = apps_state.settings.lock().unwrap();
+            let hash_key = settings.get("hash_key").unwrap().clone();
+            drop(settings);
+            drop(apps_state);
+
             // body is loaded, now we can deserialize serde-json
             if let Ok(obj) = serde_json::from_slice::<UserRequest>(&body) {
                 let mut rand = rand::thread_rng();
                 let new_user_id: u16 = rand.gen();
                 let user_req = obj.clone();
                 let new_user_id_i = new_user_id as i16;
-                let password_hash = create_password_hash(obj.password, "spiffy".to_string());
+                let password_hash = create_password_hash(obj.password, hash_key.to_string());
                 let new_user = User {
                     user_id: new_user_id_i,
                     name: obj.name,
@@ -191,14 +197,6 @@ pub async fn create_user(user: User, data: Data<Mutex<AppState>>) {
 
     println!("Create user: {}", user.email);
 
-    // todo()! troubleshoot
-    // let mut sett_state = data.lock();
-    // let mut settings_map = sett_state.unwrap().settings.lock().unwrap();
-    // let hash_key = settings_map.get("hash_key").unwrap();
-
-    let password_hash = create_password_hash(user.password.clone(), "spiffy".to_string());
-    let is_closed = db_pool.is_closed();
-    // println!("Database connected: {}", !is_closed);
 
     let query_result =
         sqlx::query("INSERT INTO user (userid, name, email, password) VALUES (?,?,?,?)")

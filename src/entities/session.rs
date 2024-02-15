@@ -83,10 +83,16 @@ pub async fn login_user_route(
                 body.extend_from_slice(&chunk);
             }
 
+            let mut apps_state = data.lock().unwrap();
+            let settings = apps_state.settings.lock().unwrap();
+            let hash_key = settings.get("hash_key").unwrap().clone();
+            drop(settings);
+            drop(apps_state);
+
             // body is loaded, now we can deserialize serde-json
             if let Ok(obj) = serde_json::from_slice::<LoginRequest>(&body) {
                 let login_req = obj.clone();
-                let password_hash = create_password_hash(obj.password, "spiffy".to_string());
+                let password_hash = create_password_hash(obj.password, hash_key.to_string());
                 let login_request = LoginRequest {
                     email: obj.email,
                     password: password_hash,
