@@ -1,3 +1,4 @@
+#!/bin/bash
 export DOCKER_MARIADB_DBHOST="127.0.0.1";
 export DOCKER_MARIADB_DBPORT="3306";
 export DOCKER_MARIADB_DBNAME="mdb";
