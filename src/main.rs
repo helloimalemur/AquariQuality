@@ -86,6 +86,7 @@ async fn main() -> std::io::Result<()> {
         .parse::<bool>()
         .expect("could not get frontend_enabled from settings");
 
+    println!("Connecting to Database: {}", database_url.clone());
     // database connection
     let db_pool = MySqlPool::connect(database_url)
         .await
@@ -93,6 +94,10 @@ async fn main() -> std::io::Result<()> {
 
     if !db_pool.is_closed() && frontend_enabled {
         let _ = start_front_end().await;
+    }
+
+    if !db_pool.is_closed() {
+        println!("Successfully Connected");
     }
 
     let state = Data::new(Mutex::new(AppState::new(
