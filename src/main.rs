@@ -23,6 +23,7 @@ use config::Config;
 use sqlx::{MySql, MySqlPool, Pool};
 use std::collections::HashMap;
 use std::sync::Mutex;
+use actix_cors::Cors;
 
 async fn root(data: Data<Mutex<AppState>>, req: HttpRequest) -> String {
     if is_key_valid(
@@ -116,7 +117,13 @@ async fn main() -> std::io::Result<()> {
     )));
 
     HttpServer::new(move || {
+        let cors = Cors::default()
+            .allow_any_origin()
+            .allow_any_method()
+            .max_age(3600);
+
         App::new()
+            .wrap(cors)
             .app_data(state.clone())
             .wrap(api_key::ApiKey::new("".to_string()))
             // login/logout
