@@ -6,7 +6,7 @@ import {verify_login} from "@/lib/login";
 
 export default function Dashboard() {
   const [authenticated, setAuthenticated] = useState("false");
-  const [cookie, setCookie] = useState("d");
+  const [cookie, setCookie] = useState("");
   const [loading, setLoading] = useState(true);
 
 
