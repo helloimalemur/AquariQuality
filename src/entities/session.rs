@@ -53,7 +53,7 @@ struct LogoutRequest {
 // PRIMARY KEY (`sessionid`)
 // ) ENGINE=InnoDB;
 
-// curl -XPOST -H'x-api-key: omganotherone' localhost:8723/login/ -d '{"email":"johhny@mail.com","password":"password"}'
+// curl -XPOST -H'X-API-KEY: omganotherone' localhost:8723/login/ -d '{"email":"johhny@mail.com","password":"password"}'
 pub async fn login_user_route(
     // name: web::Path<String>,
     mut payload: web::Payload,
@@ -62,10 +62,10 @@ pub async fn login_user_route(
 ) -> String {
     const MAX_SIZE: usize = 262_144; // max payload size is 256k
                                      // verify api_key
-    if req.headers().get("x-api-key").is_some() {
+    if req.headers().get("X-API-KEY").is_some() {
         if is_key_valid(
             req.headers()
-                .get("x-api-key")
+                .get("X-API-KEY")
                 .unwrap()
                 .to_str()
                 .unwrap()
@@ -218,7 +218,7 @@ async fn generate_jwt_session_id(user_id: i16) -> String {
     temp_new_session_id.to_string()
 }
 
-// curl -XPOST -H'x-api-key: omganotherone' localhost:8723/logout/ -d '{"email":"johhny@mail.com","session_id":"password"}'
+// curl -XPOST -H'X-API-KEY: omganotherone' localhost:8723/logout/ -d '{"email":"johhny@mail.com","session_id":"password"}'
 pub async fn logout_user_route(
     // name: web::Path<String>,
     mut payload: web::Payload,
@@ -227,10 +227,10 @@ pub async fn logout_user_route(
 ) -> String {
     const MAX_SIZE: usize = 262_144; // max payload size is 256k
                                      // verify api_key
-    if req.headers().get("x-api-key").is_some() {
+    if req.headers().get("X-API-KEY").is_some() {
         if is_key_valid(
             req.headers()
-                .get("x-api-key")
+                .get("X-API-KEY")
                 .unwrap()
                 .to_str()
                 .unwrap()

@@ -63,10 +63,10 @@ pub async fn create_tank_route(
     req: HttpRequest,
 ) -> String {
     // verify api_key
-    if req.headers().get("x-api-key").is_some() {
+    if req.headers().get("X-API-KEY").is_some() {
         if is_key_valid(
             req.headers()
-                .get("x-api-key")
+                .get("X-API-KEY")
                 .unwrap()
                 .to_str()
                 .unwrap()
@@ -90,10 +90,10 @@ pub async fn delete_tank_route(
     req: HttpRequest,
 ) -> String {
     // verify api_key
-    if req.headers().get("x-api-key").is_some() {
+    if req.headers().get("X-API-KEY").is_some() {
         if is_key_valid(
             req.headers()
-                .get("x-api-key")
+                .get("X-API-KEY")
                 .unwrap()
                 .to_str()
                 .unwrap()
@@ -117,10 +117,10 @@ pub async fn modify_tank_route(
     req: HttpRequest,
 ) -> String {
     // verify api_key
-    if req.headers().get("x-api-key").is_some() {
+    if req.headers().get("X-API-KEY").is_some() {
         if is_key_valid(
             req.headers()
-                .get("x-api-key")
+                .get("X-API-KEY")
                 .unwrap()
                 .to_str()
                 .unwrap()

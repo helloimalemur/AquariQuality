@@ -1,5 +1,5 @@
 // https://imfeld.dev/writing/actix-web-middleware
-// curl -XGET -H'x-api-key: headervalue' localhost:8723/hello/asdf
+// curl -XGET -H'X-API-KEY: headervalue' localhost:8723/hello/asdf
 mod api_keys;
 mod entities;
 mod frontend;
@@ -28,7 +28,7 @@ use actix_cors::Cors;
 async fn root(data: Data<Mutex<AppState>>, req: HttpRequest) -> String {
     if is_key_valid(
         match req.headers()
-            .get("x-api-key") {
+            .get("X-API-KEY") {
             Some(x) => {
                x.to_str()
                     .unwrap()
@@ -120,7 +120,8 @@ async fn main() -> std::io::Result<()> {
         let cors = Cors::default()
             .allow_any_origin()
             .allow_any_header()
-            .allow_any_method()
+            // .allow_any_method()
+            .allowed_methods(vec!["GET", "POST", "OPTIONS", "X-API-KEY"])
             // .allowed_origin("*")
             // .allowed_methods(["OPTIONS","GET", "POST"])
             // .allowed_methods(vec!["GET", "POST", "OPTIONS"])

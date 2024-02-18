@@ -15,7 +15,7 @@ pub struct ApiKeyRequest {
     api_key: String,
 }
 
-// curl -XPOST -H'x-api-key: 12790066417744034365' localhost:8723/api/create/
+// curl -XPOST -H'X-API-KEY: 12790066417744034365' localhost:8723/api/create/
 pub async fn create_api_key(
     // name: web::Path<String>,
     mut payload: web::Payload,
@@ -24,10 +24,10 @@ pub async fn create_api_key(
 ) -> String {
     // verify api_key
     const MAX_SIZE: usize = 262_144; // max payload size is 256k
-    if req.headers().get("x-api-key").is_some() {
+    if req.headers().get("X-API-KEY").is_some() {
         if is_key_valid(
             req.headers()
-                .get("x-api-key")
+                .get("X-API-KEY")
                 .unwrap()
                 .to_str()
                 .unwrap()
@@ -66,7 +66,7 @@ pub async fn create_api_key(
     }
 }
 
-// curl -XPOST -H'x-api-key: 12790066417744034365' localhost:8723/api/delete/ -d'{"api_key":"9860738100897034443"}'
+// curl -XPOST -H'X-API-KEY: 12790066417744034365' localhost:8723/api/delete/ -d'{"api_key":"9860738100897034443"}'
 pub async fn delete_api_key(
     // key: web::Path<String>,
     mut payload: web::Payload,
@@ -74,10 +74,10 @@ pub async fn delete_api_key(
     req: HttpRequest,
 ) -> String {
     // verify api_key
-    if req.headers().get("x-api-key").is_some() {
+    if req.headers().get("X-API-KEY").is_some() {
         if is_key_valid(
             req.headers()
-                .get("x-api-key")
+                .get("X-API-KEY")
                 .unwrap()
                 .to_str()
                 .unwrap()

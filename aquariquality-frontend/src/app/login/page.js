@@ -38,7 +38,7 @@ export default function Login() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': 'omganotherone',
+        'X-API-KEY': 'omganotherone',
       },
       body: json,
     }).then((response) => response.text())

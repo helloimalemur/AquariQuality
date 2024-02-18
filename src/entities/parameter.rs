@@ -43,7 +43,7 @@ pub struct ParameterRequest {
 // PRIMARY KEY (`userid`)
 // ) ENGINE=InnoDB;
 
-// curl -XPOST -H'x-api-key: omganotherone' localhost:8723/api/create/parameter/ -d '{ "session_id": "String", "user_id": 4412, "ph": 0.0, "kh": 0.0, "ammmonia": 0.0, "nitrite": 0.0, "nitrate": 0.0}'
+// curl -XPOST -H'X-API-KEY: omganotherone' localhost:8723/api/create/parameter/ -d '{ "session_id": "String", "user_id": 4412, "ph": 0.0, "kh": 0.0, "ammmonia": 0.0, "nitrite": 0.0, "nitrate": 0.0}'
 pub async fn create_parameter_route(
     // name: web::Path<String>,
     mut payload: web::Payload,
@@ -53,10 +53,10 @@ pub async fn create_parameter_route(
     const MAX_SIZE: usize = 262_144; // max payload size is 256k
 
     // verify api_key
-    if req.headers().get("x-api-key").is_some() {
+    if req.headers().get("X-API-KEY").is_some() {
         if is_key_valid(
             req.headers()
-                .get("x-api-key")
+                .get("X-API-KEY")
                 .unwrap()
                 .to_str()
                 .unwrap()
@@ -108,10 +108,10 @@ pub async fn delete_parameter_route(
     req: HttpRequest,
 ) -> String {
     // verify api_key
-    if req.headers().get("x-api-key").is_some() {
+    if req.headers().get("X-API-KEY").is_some() {
         if is_key_valid(
             req.headers()
-                .get("x-api-key")
+                .get("X-API-KEY")
                 .unwrap()
                 .to_str()
                 .unwrap()
@@ -135,10 +135,10 @@ pub async fn modify_parameter_route(
     req: HttpRequest,
 ) -> String {
     // verify api_key
-    if req.headers().get("x-api-key").is_some() {
+    if req.headers().get("X-API-KEY").is_some() {
         if is_key_valid(
             req.headers()
-                .get("x-api-key")
+                .get("X-API-KEY")
                 .unwrap()
                 .to_str()
                 .unwrap()

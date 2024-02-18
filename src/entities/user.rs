@@ -37,7 +37,7 @@ pub struct UserRequest {
 // PRIMARY KEY (`userid`)
 // ) ENGINE=InnoDB;
 
-// curl -XPOST -H'x-api-key: omganotherone' localhost:8723/user/create/ -d '{"name":"johnny","email":"johhny@mail.com","password":"password"}'
+// curl -XPOST -H'X-API-KEY: omganotherone' localhost:8723/user/create/ -d '{"name":"johnny","email":"johhny@mail.com","password":"password"}'
 pub async fn create_user_route(
     // name: web::Path<String>,
     mut payload: web::Payload,
@@ -46,10 +46,10 @@ pub async fn create_user_route(
 ) -> String {
     const MAX_SIZE: usize = 262_144; // max payload size is 256k
                                      // verify api_key
-    if req.headers().get("x-api-key").is_some() {
+    if req.headers().get("X-API-KEY").is_some() {
         if is_key_valid(
             req.headers()
-                .get("x-api-key")
+                .get("X-API-KEY")
                 .unwrap()
                 .to_str()
                 .unwrap()
@@ -210,7 +210,7 @@ pub async fn create_user(user: User, data: Data<Mutex<AppState>>) {
     // println!("{:#?}", query_result);
 }
 
-// curl -XPOST -H'x-api-key: 12790066417744034365' localhost:8723/api/delete/user/ -d '{"name":"johnny","email":"johhny@mail.com"}'
+// curl -XPOST -H'X-API-KEY: 12790066417744034365' localhost:8723/api/delete/user/ -d '{"name":"johnny","email":"johhny@mail.com"}'
 pub async fn delete_user_route(
     // name: web::Path<String>,
     mut payload: Payload,
@@ -219,10 +219,10 @@ pub async fn delete_user_route(
 ) -> String {
     const MAX_SIZE: usize = 262_144; // max payload size is 256k
                                      // verify api_key
-    if req.headers().get("x-api-key").is_some() {
+    if req.headers().get("X-API-KEY").is_some() {
         if is_key_valid(
             req.headers()
-                .get("x-api-key")
+                .get("X-API-KEY")
                 .unwrap()
                 .to_str()
                 .unwrap()
@@ -280,10 +280,10 @@ pub async fn modify_user_route(
     req: HttpRequest,
 ) -> String {
     // verify api_key
-    if req.headers().get("x-api-key").is_some() {
+    if req.headers().get("X-API-KEY").is_some() {
         if is_key_valid(
             req.headers()
-                .get("x-api-key")
+                .get("X-API-KEY")
                 .unwrap()
                 .to_str()
                 .unwrap()
