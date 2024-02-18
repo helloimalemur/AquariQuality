@@ -1,3 +1,4 @@
+"use client";
 import {useEffect, useState} from "react";
 
 export default function Login() {
@@ -33,8 +34,18 @@ export default function Login() {
 
     const json = JSON.stringify({"username": email, "password": password});
 
-    fetch("http://localhost:8723")
-
+    fetch('http://localhost:8723/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': 'omganotherone',
+      },
+      body: json,
+    }).then((response) => response.text())
+        .then((data) => {
+        setSessionid(data);
+        console.log(data);
+        })
   }
 
   return (
@@ -107,6 +118,7 @@ export default function Login() {
               <div>
                 <button
                     type="submit"
+                    onClick={(e) => handleSubmit(e)}
                     className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                 >
                   Sign in

@@ -43,7 +43,7 @@ pub struct ParameterRequest {
 // PRIMARY KEY (`userid`)
 // ) ENGINE=InnoDB;
 
-// curl -XPOST -H'x-api-key: omganotherone' localhost:8080/api/create/parameter/ -d '{ "session_id": "String", "user_id": 4412, "ph": 0.0, "kh": 0.0, "ammmonia": 0.0, "nitrite": 0.0, "nitrate": 0.0}'
+// curl -XPOST -H'x-api-key: omganotherone' localhost:8723/api/create/parameter/ -d '{ "session_id": "String", "user_id": 4412, "ph": 0.0, "kh": 0.0, "ammmonia": 0.0, "nitrite": 0.0, "nitrate": 0.0}'
 pub async fn create_parameter_route(
     // name: web::Path<String>,
     mut payload: web::Payload,

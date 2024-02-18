@@ -15,7 +15,7 @@ pub struct ApiKeyRequest {
     api_key: String,
 }
 
-// curl -XPOST -H'x-api-key: 12790066417744034365' localhost:8080/api/create/
+// curl -XPOST -H'x-api-key: 12790066417744034365' localhost:8723/api/create/
 pub async fn create_api_key(
     // name: web::Path<String>,
     mut payload: web::Payload,
@@ -66,7 +66,7 @@ pub async fn create_api_key(
     }
 }
 
-// curl -XPOST -H'x-api-key: 12790066417744034365' localhost:8080/api/delete/ -d'{"api_key":"9860738100897034443"}'
+// curl -XPOST -H'x-api-key: 12790066417744034365' localhost:8723/api/delete/ -d'{"api_key":"9860738100897034443"}'
 pub async fn delete_api_key(
     // key: web::Path<String>,
     mut payload: web::Payload,

@@ -53,7 +53,7 @@ struct LogoutRequest {
 // PRIMARY KEY (`sessionid`)
 // ) ENGINE=InnoDB;
 
-// curl -XPOST -H'x-api-key: omganotherone' localhost:8080/login/ -d '{"email":"johhny@mail.com","password":"password"}'
+// curl -XPOST -H'x-api-key: omganotherone' localhost:8723/login/ -d '{"email":"johhny@mail.com","password":"password"}'
 pub async fn login_user_route(
     // name: web::Path<String>,
     mut payload: web::Payload,
@@ -218,7 +218,7 @@ async fn generate_jwt_session_id(user_id: i16) -> String {
     temp_new_session_id.to_string()
 }
 
-// curl -XPOST -H'x-api-key: omganotherone' localhost:8080/logout/ -d '{"email":"johhny@mail.com","session_id":"password"}'
+// curl -XPOST -H'x-api-key: omganotherone' localhost:8723/logout/ -d '{"email":"johhny@mail.com","session_id":"password"}'
 pub async fn logout_user_route(
     // name: web::Path<String>,
     mut payload: web::Payload,
