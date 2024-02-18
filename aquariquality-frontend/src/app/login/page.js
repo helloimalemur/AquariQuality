@@ -41,7 +41,7 @@ export default function Login() {
           let key;
           key = data;
 
-          if (key.length > 30 && key !== "<html><body><h1>429 Too Many Requests</h1>") {
+          if (key.length > 30 && key !== "<html><body><h1>429 Too Many Requests</h1>" && key !== "user does not exist") {
             setCookie('session_id', key, 30);
             setAuthtoken(key);
             setAuth(true);
