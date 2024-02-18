@@ -9,7 +9,7 @@ use crate::api_keys::{create_api_key, delete_api_key, is_key_valid, load_keys_fr
 use crate::entities::parameter::{
     create_parameter_route, delete_parameter_route, modify_parameter_route,
 };
-use crate::entities::session::{login_user_route, logout_user_route};
+use crate::entities::session::{login_user_route, logout_user_route, verify_session_route};
 use crate::entities::tank::{create_tank_route, delete_tank_route, modify_tank_route};
 use crate::entities::user::{create_user_route, delete_user_route, modify_user_route};
 use crate::frontend::start_front_end;
@@ -134,6 +134,9 @@ async fn main() -> std::io::Result<()> {
             .service(web::resource("/login/").post(login_user_route))
             .service(web::resource("/logout").post(logout_user_route))
             .service(web::resource("/logout/").post(logout_user_route))
+            //verify login
+            .service(web::resource("/verify").post(verify_session_route))
+            .service(web::resource("/verify/").post(verify_session_route))
             // src/api_keys
             .service(web::resource("/api/create/").post(create_api_key))
             .service(web::resource("/api/delete/").post(delete_api_key))

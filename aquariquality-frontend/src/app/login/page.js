@@ -1,6 +1,7 @@
 "use client";
 import {useEffect, useState} from "react";
-import {login, setCookie} from "@/lib/login"
+import {login} from "@/lib/login"
+import {setCookie} from "@/lib/cookies";
 
 export default function Login() {
   const [ip, setIp] = useState("");
