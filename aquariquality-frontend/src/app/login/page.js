@@ -1,56 +1,65 @@
 "use client";
 import {useEffect, useState} from "react";
-import {login} from "@/lib/login"
+import {login, setCookie} from "@/lib/login"
 
 export default function Login() {
+  const [ip, setIp] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [authtoken, setAuthtoken] = useState("");
+  const [auth, setAuth] = useState(false);
+  const [failure, setFailure] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [contactip, setContactip] = useState("");
+  const [analyticSent, setanalyticSent] = useState(false);
   const [sessionid, setSessionid] = useState("");
   const [key, setKey] = useState("");
-  const [loading, setLoading] = useState("");
+  const [refresh, setRefresh] = useState("");
 
-  function setCookie(cName, cValue, expDays) {
-    let date = new Date();
-    date.setTime(date.getTime() + (expDays * 24 * 60 * 60 * 1000));
-    const expires = "expires=" + date.toUTCString();
-    document.cookie = cName + "=" + cValue + "; " + expires + "; path=/";
-  }
 
-  function getCookie(cName) {
-    const name = cName + "=";
-    const cDecoded = decodeURIComponent(document.cookie); //to be careful
-    const cArr = cDecoded .split('; ');
-    let res;
-    cArr.forEach(val => {
-      if (val.indexOf(name) === 0) res = val.substring(name.length);
-    })
-    return res;
-  }
-
-  // useEffect(() => {
-  //
-  // }, []);
+  // useEffect( () => {
+  //   getIp();
+  //   if (!analyticSent && contactip.length > 0) {
+  //     console.log(contactip);
+  //     let cookie_set = getCookie("session_id");
+  //     const res = sendAnalytic(contactip, navigator.userAgent, window.location.href, cookie_set);
+  //     setanalyticSent(true);
+  //   }
+  //   console.log(ip)
+  // }, [ip, contactip, analyticSent])
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // let key_val;
-    // key_val = login(email,password);
-    // setKey(key_val);
-    login(email, password).then((r) => {
-      setSessionid(r);
-      console.log(sessionid);
-      if (sessionid !== undefined && sessionid.length > 30 && sessionid !== "<html><body><h1>429 Too Many Requests</h1>") {
-        setCookie('session_id', sessionid, 30);
-        window.location.replace("/dashboard");
-      } else {
-        setCookie('session_id', '', 0);
 
-        setEmail('');
-        setPassword('');
-      }
-    })
+    const json = JSON.stringify({"email": email, "password": password});
 
+    login(email,password)
+        .then((data) => {
+          setAuth(data);
+          console.log(auth);
+          setLoading(false);
+          let key;
+          key = data;
 
+          if (key.length > 30 && key !== "<html><body><h1>429 Too Many Requests</h1>") {
+            setCookie('session_id', key, 30);
+            setAuthtoken(key);
+            setAuth(true);
+            window.location.replace("/dashboard");
+          } else {
+            setCookie('session_id', '', 0);
+            setAuth(false);
+            setFailure(true);
+            setAuthtoken("");
+            setEmail('');
+            setPassword('');
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+          setAuth("");
+          setLoading(false);
+        });
   }
 
   return (
