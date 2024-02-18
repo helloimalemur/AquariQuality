@@ -118,8 +118,11 @@ async fn main() -> std::io::Result<()> {
 
     HttpServer::new(move || {
         let cors = Cors::default()
-            .allow_any_origin()
-            .allow_any_method()
+            .allowed_origin("http://a.test.site:3000")
+            // .allowed_methods(["OPTIONS","GET", "POST"])
+            .allow_any_header()
+            .allowed_methods(vec!["GET", "POST", "OPTIONS"])
+            .allow_private_network_access()
             .max_age(3600);
 
         App::new()

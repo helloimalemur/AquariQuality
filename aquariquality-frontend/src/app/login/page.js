@@ -34,7 +34,7 @@ export default function Login() {
 
     const json = JSON.stringify({"username": email, "password": password});
 
-    fetch('http://localhost:8723/login', {
+    fetch('http://127.0.0.1:8723/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
