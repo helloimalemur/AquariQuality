@@ -26,12 +26,15 @@ use std::sync::Mutex;
 
 async fn root(data: Data<Mutex<AppState>>, req: HttpRequest) -> String {
     if is_key_valid(
-        req.headers()
-            .get("x-api-key")
-            .unwrap()
-            .to_str()
-            .unwrap()
-            .to_string(),
+        match req.headers()
+            .get("x-api-key") {
+            Some(x) => {
+               x.to_str()
+                    .unwrap()
+                    .to_string()
+            },
+            None => "".to_string(),
+        },
         data.clone()
             .lock()
             .unwrap()
@@ -75,6 +78,12 @@ async fn main() -> std::io::Result<()> {
     let settings_map = settings
         .try_deserialize::<HashMap<String, String>>()
         .expect("unable to deserialize settings");
+
+    let http_service_port = settings_map
+        .get("http_service_port")
+        .expect("could not get http_service_port from settings")
+        .parse::<u16>()
+        .unwrap();
 
     let database_url = settings_map
         .get("database_url")
@@ -132,7 +141,7 @@ async fn main() -> std::io::Result<()> {
             .service(web::resource("/").to(root))
             .default_service(web::to(default_handler))
     })
-    .bind(("127.0.0.1", 8080))?
+    .bind(("127.0.0.1", http_service_port))?
     .run()
     .await
 }

@@ -1,5 +1,6 @@
 frontend_enabled = "true"
 database_url = "mysql://devuser:password@127.0.0.1/aquariquality"
 database_name = "aquariquality"
+http_service_port = "8723"
 #api_key = "asimplekey"
 hash_key = "spiffy"
