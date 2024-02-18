@@ -10,15 +10,12 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
 
 
-
     useEffect(() => {
         let cookie = getCookie('session_id');
         verify_login(cookie)
             .then((r) => r)
             .then((data) => {
                 console.log(data)
-                // setAuthenticated("true")
-
                 if (data.toString() === "true") {
                     setAuthenticated("true")
                 }
