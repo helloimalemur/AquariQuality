@@ -438,7 +438,7 @@ pub async fn verify_session_route(
                         "VERIFY SUCCESSFUL: {}",
                         rq.session_id.clone()
                     );
-                    rq.session_id
+                    rq.session_id.eq_ignore_ascii_case(rq.session_id.as_str().clone()).to_string()
                 } else {
                     println!(
                         "VERIFY FAILED: {}",

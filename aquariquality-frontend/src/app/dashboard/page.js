@@ -7,6 +7,8 @@ import {verify_login} from "@/lib/login";
 export default function Dashboard() {
   const [authenticated, setAuthenticated] = useState("false");
   const [cookie, setCookie] = useState("d");
+  const [loading, setLoading] = useState(true);
+
 
 
     useEffect(() => {
@@ -20,18 +22,23 @@ export default function Dashboard() {
                 if (data.toString() === "true") {
                     setAuthenticated("true")
                 }
-        })
+                setLoading(false);
+            })
 
     }, [cookie, setAuthenticated, verify_login]);
 
 
   return (
       <>
-        {(authenticated.toString() === "true") ? (
-            <div>AUTHENTICATED!! {authenticated}</div>
-        ): (
-            <div>...not authenticated...<br/>{authenticated}<br/>{cookie}</div>
-        )}
+          {(loading) ? (
+              <div>loading..</div>
+          ): (
+              (authenticated.toString() === "true") ? (
+                  <div>AUTHENTICATED!! {authenticated}</div>
+              ): (
+                  <div>...not authenticated...<br/>{authenticated}<br/>{cookie}</div>
+              )
+          )}
       </>
   );
 }
