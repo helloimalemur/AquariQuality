@@ -1,7 +1,7 @@
 export const login = async (email, password) => {
     const json = JSON.stringify({"email": email, "password": password});
     let key;
-    fetch('http://127.0.0.1:8723/login', {
+    key = fetch('http://127.0.0.1:8723/login', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -15,4 +15,5 @@ export const login = async (email, password) => {
             key = data;
             return key
         })
+    return key
 }

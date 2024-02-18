@@ -37,19 +37,19 @@ export default function Login() {
     // key_val = login(email,password);
     // setKey(key_val);
     login(email, password).then((r) => {
-      setSessionid(r)
+      setSessionid(r);
+      console.log(sessionid);
+      if (sessionid !== undefined && sessionid.length > 30 && sessionid !== "<html><body><h1>429 Too Many Requests</h1>") {
+        setCookie('session_id', sessionid, 30);
+        window.location.replace("/dashboard");
+      } else {
+        setCookie('session_id', '', 0);
+
+        setEmail('');
+        setPassword('');
+      }
     })
-    console.log(sessionid);
-    // setCookie('session_id', key, 30);
-    // if (key !== undefined && key.length > 30 && key !== "<html><body><h1>429 Too Many Requests</h1>") {
-    //   setCookie('session_id', key, 30);
-    //   window.location.replace("/dashboard");
-    // } else {
-    //   setCookie('session_id', '', 0);
-    //
-    //   setEmail('');
-    //   setPassword('');
-    // }
+
 
   }
 
