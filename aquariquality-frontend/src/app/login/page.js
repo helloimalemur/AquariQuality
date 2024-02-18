@@ -35,8 +35,6 @@ export default function Login() {
 
     login(email,password)
         .then((data) => {
-          setAuth(data);
-          console.log(auth);
           setLoading(false);
           let key;
           key = data;
@@ -50,7 +48,6 @@ export default function Login() {
             setCookie('session_id', '', 0);
             setAuth(false);
             setFailure(true);
-            setAuthtoken("");
             setEmail('');
             setPassword('');
           }
