@@ -438,7 +438,7 @@ pub async fn verify_session_route(
                         "VERIFY SUCCESSFUL: {}",
                         rq.session_id.clone()
                     );
-                    "user VERIFY successful\n".to_string()
+                    rq.session_id
                 } else {
                     println!(
                         "VERIFY FAILED: {}",
@@ -448,7 +448,7 @@ pub async fn verify_session_route(
                 }
             } else {
                 println!("VERIFY FAILED");
-                "error logging out\n".to_string()
+                "error verifying\n".to_string()
             }
         } else {
             println!("VERIFY FAILED - INVALID API KEY");

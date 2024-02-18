@@ -32,7 +32,7 @@ export const verify_login = async (session_id) => {
     })
         .then((response) => response.text())
         .then((data) => {
-            console.log(data)
+            // console.log(data)
             key = data;
             return key
         })

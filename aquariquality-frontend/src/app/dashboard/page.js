@@ -12,28 +12,26 @@ export default function Dashboard() {
     useEffect(() => {
         let cookie = getCookie('session_id');
         verify_login(cookie)
-            .then((r) => r.toString())
+            .then((r) => r)
             .then((data) => {
-            console.log(data)
-            let res;
-            res = data;
-            if (res === "true") {
-                setAuthenticated("true")
-            }
+                console.log(data)
+                // setAuthenticated("true")
+
+                if (data.toString() === "true") {
+                    setAuthenticated("true")
+                }
         })
 
-    }, []);
+    }, [cookie, setAuthenticated, verify_login]);
 
 
   return (
       <>
-        {authenticated ? (
-            <div>AUTHENTICATED!!</div>
+        {(authenticated.toString() === "true") ? (
+            <div>AUTHENTICATED!! {authenticated}</div>
         ): (
-            <div>...not authenticated...<br/>{authenticated.toString()}<br/>{cookie}</div>
+            <div>...not authenticated...<br/>{authenticated}<br/>{cookie}</div>
         )}
-
       </>
-
   );
 }
