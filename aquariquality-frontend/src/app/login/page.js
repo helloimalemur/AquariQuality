@@ -32,7 +32,9 @@ export default function Login() {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    const json = JSON.stringify({"username": email, "password": password});
+
+
+    const json = JSON.stringify({"email": email, "password": password});
 
     fetch('http://127.0.0.1:8723/login', {
       method: 'POST',
@@ -41,11 +43,31 @@ export default function Login() {
         'X-API-KEY': 'omganotherone',
       },
       body: json,
-    }).then((response) => response.text())
-        .then((data) => {
-        setSessionid(data);
-        console.log(data);
-        })
+    })
+      .then((response) => response.text())
+      .then((data) => {
+      setSessionid(data);
+      console.log(sessionid);
+
+      let key;
+      key = data;
+      console.log(data);
+      if (key.length > 30 && key !== "<html><body><h1>429 Too Many Requests</h1>") {
+        setCookie('session_id', key, 30);
+
+        window.location.replace("/dashboard");
+      } else {
+        setCookie('session_id', '', 0);
+
+        setEmail('');
+        setPassword('');
+      }
+
+    })
+    .catch((err) => {
+      console.log(err);
+      setSessionid("");
+    })
   }
 
   return (
@@ -70,10 +92,10 @@ export default function Login() {
                     Email address
                   </label>
                   <input
-                      id="email-address"
-                      name="email"
                       type="email"
                       autoComplete="email"
+                      onChange={(e) => setEmail(e.target.value)}
+                      value={email}
                       required
                       className="relative block w-full rounded-t-md border-0 py-1.5 text-gray-900 ring-1 ring-inset ring-gray-100 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                       placeholder="Email address"
@@ -84,10 +106,10 @@ export default function Login() {
                     Password
                   </label>
                   <input
-                      id="password"
-                      name="password"
                       type="password"
-                      autoComplete="current-password"
+                      autoComplete="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
                       required
                       className="relative block w-full rounded-b-md border-0 py-1.5 text-gray-900 ring-1 ring-inset ring-gray-100 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                       placeholder="Password"
