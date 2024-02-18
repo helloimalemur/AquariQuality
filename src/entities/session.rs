@@ -433,8 +433,6 @@ pub async fn verify_session_route(
                     .await;
 
                 if user_session_exists {
-                    // process login
-                    delete_session_by_sessionid(rq.session_id.clone(), data.clone()).await;
 
                     println!(
                         "VERIFY SUCCESSFUL: {}",
