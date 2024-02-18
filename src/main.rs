@@ -118,13 +118,11 @@ async fn main() -> std::io::Result<()> {
 
     HttpServer::new(move || {
         let cors = Cors::default()
-            .allow_any_origin()
+            // .allow_any_origin()
             .allow_any_header()
             // .allow_any_method()
             .allowed_methods(vec!["GET", "POST", "OPTIONS", "X-API-KEY"])
-            // .allowed_origin("*")
-            // .allowed_methods(["OPTIONS","GET", "POST"])
-            // .allowed_methods(vec!["GET", "POST", "OPTIONS"])
+            .allowed_origin("http://localhost:3000")
             .max_age(3600);
 
         App::new()
@@ -132,8 +130,10 @@ async fn main() -> std::io::Result<()> {
             .app_data(state.clone())
             .wrap(api_key::ApiKey::new("".to_string()))
             // login/logout
+            .service(web::resource("/login").post(login_user_route))
             .service(web::resource("/login/").post(login_user_route))
-            .service(web::resource("/logout/").post(logout_user_route)) // todo
+            .service(web::resource("/logout").post(logout_user_route))
+            .service(web::resource("/logout/").post(logout_user_route))
             // src/api_keys
             .service(web::resource("/api/create/").post(create_api_key))
             .service(web::resource("/api/delete/").post(delete_api_key))
