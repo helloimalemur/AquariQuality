@@ -392,6 +392,75 @@ pub async fn check_if_session_exists_with_user_id(
     true
 }
 
+// curl -XPOST -H'X-API-KEY: omganotherone' localhost:8723/verify/ -d '"session_id":"sessionid"}'
+pub async fn verify_session_route(
+    // name: web::Path<String>,
+    mut payload: web::Payload,
+    data: Data<Mutex<AppState>>,
+    req: HttpRequest,
+) -> String {
+    const MAX_SIZE: usize = 262_144; // max payload size is 256k
+    // verify api_key
+    if req.headers().get("X-API-KEY").is_some() {
+        if is_key_valid(
+            req.headers()
+                .get("X-API-KEY")
+                .unwrap()
+                .to_str()
+                .unwrap()
+                .to_string(),
+            data.lock().unwrap().api_key.lock().unwrap().to_vec(),
+        ) {
+            let mut body = web::BytesMut::new();
+
+            while let Some(chunk) = payload.next().await {
+                let chunk = chunk.unwrap();
+                // limit max size of in-memory payload
+                if (body.len() + chunk.len()) > MAX_SIZE {
+                    return ErrorBadRequest("overflow").to_string();
+                }
+                body.extend_from_slice(&chunk);
+            }
+
+            // body is loaded, now we can deserialize serde-json
+            if let Ok(obj) = serde_json::from_slice::<SessionId>(&body) {
+                let rq = obj.clone();
+
+                let user_session_exists = check_if_session_exists(
+                    SessionId::new(rq.session_id.clone()),
+                    data.clone(),
+                )
+                    .await;
+
+                if user_session_exists {
+
+                    println!(
+                        "VERIFY SUCCESSFUL: {}",
+                        rq.session_id.clone()
+                    );
+                    rq.session_id.eq_ignore_ascii_case(rq.session_id.as_str().clone()).to_string()
+                } else {
+                    println!(
+                        "VERIFY FAILED: {}",
+                        rq.session_id.clone()
+                    );
+                    "error verifying\n".to_string()
+                }
+            } else {
+                println!("VERIFY FAILED");
+                "error verifying\n".to_string()
+            }
+        } else {
+            println!("VERIFY FAILED - INVALID API KEY");
+            "invalid api key\n".to_string()
+        }
+    } else {
+        println!("VERIFY FAILED - INVALID API KEY");
+        "invalid api key\n".to_string()
+    }
+}
+
+
 #[cfg(test)]
 mod tests {
     use crate::api_keys::load_keys_from_file;

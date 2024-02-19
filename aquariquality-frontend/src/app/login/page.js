@@ -1,73 +1,63 @@
 "use client";
 import {useEffect, useState} from "react";
+import {login} from "@/lib/login"
+import {setCookie} from "@/lib/cookies";
 
 export default function Login() {
+  const [ip, setIp] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [authtoken, setAuthtoken] = useState("");
+  const [auth, setAuth] = useState(false);
+  const [failure, setFailure] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [contactip, setContactip] = useState("");
+  const [analyticSent, setanalyticSent] = useState(false);
   const [sessionid, setSessionid] = useState("");
-  const [loading, setLoading] = useState("");
+  const [key, setKey] = useState("");
+  const [refresh, setRefresh] = useState("");
 
-  function setCookie(cName, cValue, expDays) {
-    let date = new Date();
-    date.setTime(date.getTime() + (expDays * 24 * 60 * 60 * 1000));
-    const expires = "expires=" + date.toUTCString();
-    document.cookie = cName + "=" + cValue + "; " + expires + "; path=/";
-  }
 
-  function getCookie(cName) {
-    const name = cName + "=";
-    const cDecoded = decodeURIComponent(document.cookie); //to be careful
-    const cArr = cDecoded .split('; ');
-    let res;
-    cArr.forEach(val => {
-      if (val.indexOf(name) === 0) res = val.substring(name.length);
-    })
-    return res;
-  }
-
-  // useEffect(() => {
-  //
-  // }, []);
+  // useEffect( () => {
+  //   getIp();
+  //   if (!analyticSent && contactip.length > 0) {
+  //     console.log(contactip);
+  //     let cookie_set = getCookie("session_id");
+  //     const res = sendAnalytic(contactip, navigator.userAgent, window.location.href, cookie_set);
+  //     setanalyticSent(true);
+  //   }
+  //   console.log(ip)
+  // }, [ip, contactip, analyticSent])
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-
-
     const json = JSON.stringify({"email": email, "password": password});
 
-    fetch('http://127.0.0.1:8723/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-API-KEY': 'omganotherone',
-      },
-      body: json,
-    })
-      .then((response) => response.text())
-      .then((data) => {
-      setSessionid(data);
-      console.log(sessionid);
+    login(email,password)
+        .then((data) => {
+          setLoading(false);
+          let key;
+          key = data;
 
-      let key;
-      key = data;
-      console.log(data);
-      if (key.length > 30 && key !== "<html><body><h1>429 Too Many Requests</h1>") {
-        setCookie('session_id', key, 30);
-
-        window.location.replace("/dashboard");
-      } else {
-        setCookie('session_id', '', 0);
-
-        setEmail('');
-        setPassword('');
-      }
-
-    })
-    .catch((err) => {
-      console.log(err);
-      setSessionid("");
-    })
+          if (key.length > 30 && key !== "<html><body><h1>429 Too Many Requests</h1>" && key !== "user does not exist") {
+            setCookie('session_id', key, 30);
+            setAuthtoken(key);
+            setAuth(true);
+            window.location.replace("/dashboard");
+          } else {
+            setCookie('session_id', '', 0);
+            setAuth(false);
+            setFailure(true);
+            setEmail('');
+            setPassword('');
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+          setAuth("");
+          setLoading(false);
+        });
   }
 
   return (
@@ -86,35 +76,31 @@ export default function Login() {
             </div>
             <form className="space-y-6" action="#" method="POST">
               <div className="relative -space-y-px rounded-md shadow-sm">
-                <div className="pointer-events-none absolute inset-0 z-10 rounded-md ring-1 ring-inset ring-gray-300" />
-                <div>
-                  <label htmlFor="email-address" className="sr-only">
-                    Email address
-                  </label>
-                  <input
-                      type="email"
-                      autoComplete="email"
-                      onChange={(e) => setEmail(e.target.value)}
-                      value={email}
-                      required
-                      className="relative block w-full rounded-t-md border-0 py-1.5 text-gray-900 ring-1 ring-inset ring-gray-100 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                      placeholder="Email address"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="password" className="sr-only">
-                    Password
-                  </label>
-                  <input
-                      type="password"
-                      autoComplete="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      className="relative block w-full rounded-b-md border-0 py-1.5 text-gray-900 ring-1 ring-inset ring-gray-100 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                      placeholder="Password"
-                  />
-                </div>
+                <div className="pointer-events-none absolute inset-0 z-10 rounded-md ring-1 ring-inset ring-gray-300"/>
+                <label htmlFor="email-address" className="sr-only">
+                  Email address
+                </label>
+                <input
+                    type="email"
+                    autoComplete="email"
+                    onChange={(e) => setEmail(e.target.value)}
+                    value={email}
+                    required
+                    className="relative block w-full rounded-t-md border-0 py-1.5 text-gray-900 ring-1 ring-inset ring-gray-100 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                    placeholder="Email address"
+                />
+                <label htmlFor="password" className="sr-only">
+                  Password
+                </label>
+                <input
+                    type="password"
+                    autoComplete="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="relative block w-full rounded-b-md border-0 py-1.5 text-gray-900 ring-1 ring-inset ring-gray-100 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                    placeholder="Password"
+                />
               </div>
 
               <div className="flex items-center justify-between">
