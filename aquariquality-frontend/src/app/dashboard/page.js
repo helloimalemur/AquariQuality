@@ -18,8 +18,11 @@ export default function Dashboard() {
                 console.log(data)
                 if (data.toString() === "true") {
                     setAuthenticated("true")
+                } else {
+                    window.location.replace("/login");
                 }
                 setLoading(false);
+
             })
 
     }, [cookie, setAuthenticated, verify_login]);
