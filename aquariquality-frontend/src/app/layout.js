@@ -1,5 +1,7 @@
+
 import { Inter } from "next/font/google";
 import "./globals.css";
+
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -9,6 +11,7 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
+
   return (
     <html className="h-full bg-gray-100" lang="en">
     <body className={inter.className}>
@@ -25,7 +28,7 @@ export default function RootLayout({ children }) {
                 <div className="ml-10 flex items-baseline space-x-4">
                          {/*Current: "bg-gray-900 text-white", Default: "text-gray-300 hover:bg-gray-700 hover:text-white" */}
                   <a href="#" className="bg-gray-900 text-white rounded-md px-3 py-2 text-sm font-medium"
-                     aria-current="page">Dashboard</a>
+                     aria-current="page">AquariQuality</a>
                   <a href="#"
                      className="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Team</a>
                   <a href="#"
@@ -55,7 +58,7 @@ export default function RootLayout({ children }) {
                   <div>
                     <button type="button"
                             className="relative flex max-w-xs items-center rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
-                            id="user-menu-button" aria-expanded="false" aria-haspopup="false">
+                            id="user-menu-button" aria-expanded="false" aria-haspopup="false" aria-pressed="true">
                       <span className="absolute -inset-1.5"></span>
                       <span className="sr-only">Open user menu</span>
                       <img className="h-8 w-8 rounded-full"
@@ -74,17 +77,6 @@ export default function RootLayout({ children }) {
                     {/*  From: "transform opacity-100 scale-100"*/}
                     {/*  To: "transform opacity-0 scale-95"*/}
 
-                  <div
-                      className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
-                      role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button" tabIndex="-1">
-                    {/*Active: "bg-gray-100", Not Active: ""*/}
-                    <a href="#" className="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabIndex="-1"
-                       id="user-menu-item-0">Your Profile</a>
-                    <a href="#" className="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabIndex="-1"
-                       id="user-menu-item-1">Settings</a>
-                    <a href="#" className="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabIndex="-1"
-                       id="user-menu-item-2">Sign out</a>
-                  </div>
                 </div>
               </div>
             </div>
@@ -164,7 +156,7 @@ export default function RootLayout({ children }) {
 
       <header className="bg-white shadow">
         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900">Dashboard</h1>
+          {/*<h1 className="text-3xl font-bold tracking-tight text-gray-900">Dashboard</h1>*/}
         </div>
       </header>
       <main>
