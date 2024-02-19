@@ -3,6 +3,8 @@ import Image from "next/image";
 import {useEffect, useState} from "react";
 import {getCookie} from "@/lib/cookies";
 import {verify_login} from "@/lib/login";
+import Script from 'next/script';
+
 
 export default function Dashboard() {
   const [authenticated, setAuthenticated] = useState("false");
@@ -30,12 +32,15 @@ export default function Dashboard() {
 
   return (
       <>
+          <script
+              src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js">
+          </script>
           {(loading) ? (
               <div>loading..</div>
-          ): (
+          ) : (
               (authenticated.toString() === "true") ? (
                   <div>AUTHENTICATED!! {authenticated}</div>
-              ): (
+              ) : (
                   <div>...not authenticated...<br/>{authenticated}<br/>{cookie}</div>
               )
           )}
