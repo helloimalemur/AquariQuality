@@ -41,7 +41,6 @@ struct LoginRequest {
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 struct LogoutRequest {
-    email: String,
     session_id: String,
 }
 
@@ -218,7 +217,7 @@ async fn generate_jwt_session_id(user_id: i16) -> String {
     temp_new_session_id.to_string()
 }
 
-// curl -XPOST -H'X-API-KEY: omganotherone' localhost:8723/logout/ -d '{"email":"johhny@mail.com","session_id":"password"}'
+// curl -XPOST -H'X-API-KEY: omganotherone' localhost:8723/logout/ -d '{"session_id":"password"}'
 pub async fn logout_user_route(
     // name: web::Path<String>,
     mut payload: web::Payload,
@@ -253,11 +252,10 @@ pub async fn logout_user_route(
                 let logout_rq = obj.clone();
                 let logout_request = LogoutRequest {
                     session_id: obj.session_id,
-                    email: obj.email,
                 };
 
                 // println!("{:#?}", logout_request.clone());
-                let user_exists = check_user_exist(logout_rq.email.clone(), data.clone()).await;
+                // let user_exists = check_user_exist(logout_rq.email.clone(), data.clone()).await;
                 // let mut app_state = data.lock();
                 // let mut db_pool = app_state.as_mut().unwrap().db_pool.lock().unwrap();
                 let user_session_exists = check_if_session_exists(
@@ -266,30 +264,21 @@ pub async fn logout_user_route(
                 )
                 .await;
 
-                if user_exists && user_session_exists {
+                if user_session_exists {
                     // process login
                     delete_session_by_sessionid(logout_rq.session_id.clone(), data.clone()).await;
 
                     println!(
-                        "LOGOUT SUCCESSFUL: {} :: {}",
-                        logout_rq.email.clone(),
+                        "LOGOUT SUCCESSFUL: {}",
                         logout_rq.session_id.clone()
                     );
                     "user logout successful\n".to_string()
-                } else if !user_exists {
-                    println!(
-                        "LOGOUT FAILED, USER DOES NOT EXIST: {} :: {}",
-                        logout_rq.email.clone(),
-                        logout_rq.session_id.clone()
-                    );
-                    "user does not exist\n".to_string()
                 } else {
                     println!(
-                        "LOGOUT FAILED: {} :: {}",
-                        logout_rq.email.clone(),
+                        "LOGOUT FAILED: {}",
                         logout_rq.session_id.clone()
                     );
-                    "error logging out\n".to_string()
+                    "user logout error\n".to_string()
                 }
             } else {
                 println!("LOGOUT FAILED");

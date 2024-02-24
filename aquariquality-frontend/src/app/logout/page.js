@@ -2,7 +2,7 @@
 import Image from "next/image";
 import {useEffect, useState} from "react";
 import {getCookie} from "@/lib/cookies";
-import {verify_login} from "@/lib/login";
+import {logout} from "@/lib/logout";
 import Script from 'next/script';
 
 
@@ -14,20 +14,21 @@ export default function Dashboard() {
 
     useEffect(() => {
         let cookie = getCookie('session_id');
-        verify_login(cookie)
+        logout(cookie)
             .then((r) => r)
             .then((data) => {
                 console.log(data)
-                if (data.toString() === "true") {
-                    setAuthenticated("true")
-                } else {
-                    window.location.replace("/login");
-                }
+                // if (data.toString() === "true") {
+                //     setAuthenticated("false")
+                // } else {
+                //     window.location.replace("/");
+                // }
+                window.location.replace("/");
                 setLoading(false);
 
             })
 
-    }, [cookie, setAuthenticated, verify_login]);
+    }, [cookie, setAuthenticated]);
 
 
   return (
