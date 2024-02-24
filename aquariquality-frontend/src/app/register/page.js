@@ -1,6 +1,6 @@
 "use client";
 import {useEffect, useState} from "react";
-import {login} from "@/lib/login"
+import {register} from "@/lib/register"
 import {setCookie} from "@/lib/cookies";
 
 export default function Register() {
