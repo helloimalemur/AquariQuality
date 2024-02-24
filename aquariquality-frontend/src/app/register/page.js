@@ -5,6 +5,7 @@ import {setCookie} from "@/lib/cookies";
 
 export default function Register() {
   const [ip, setIp] = useState("");
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [authtoken, setAuthtoken] = useState("");
@@ -32,9 +33,9 @@ export default function Register() {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    const json = JSON.stringify({"email": email, "password": password});
+    const json = JSON.stringify({"name": name, "email": email, "password": password});
 
-    register(email,password)
+    register(name, email, password)
         .then((data) => {
           setLoading(false);
           setEmail('');
@@ -65,6 +66,18 @@ export default function Register() {
               <div className="relative -space-y-px rounded-md shadow-sm">
                 <div className="pointer-events-none absolute inset-0 z-10 rounded-md ring-1 ring-inset ring-gray-300"/>
                 <label htmlFor="email-address" className="sr-only">
+                  Name
+                </label>
+                <input
+                    type="name"
+                    autoComplete="name"
+                    onChange={(e) => setName(e.target.value)}
+                    value={name}
+                    required
+                    className="relative block w-full rounded-t-md border-0 py-1.5 text-gray-900 ring-1 ring-inset ring-gray-100 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                    placeholder="Name"
+                />
+                <label htmlFor="email-address" className="sr-only">
                   Email address
                 </label>
                 <input
@@ -89,7 +102,6 @@ export default function Register() {
                     placeholder="Password"
                 />
               </div>
-
 
 
               <div>
