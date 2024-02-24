@@ -137,12 +137,15 @@ async fn main() -> std::io::Result<()> {
             //verify login
             .service(web::resource("/verify").post(verify_session_route))
             .service(web::resource("/verify/").post(verify_session_route))
+            //verify login
+            .service(web::resource("/register").post(create_user_route))
+            .service(web::resource("/register/").post(create_user_route))
             // src/api_keys
             .service(web::resource("/api/create/").post(create_api_key))
             .service(web::resource("/api/delete/").post(delete_api_key))
             // src/entities/users
             .service(web::resource("/user/create/").post(create_user_route))
-            .service(web::resource("/user/delete/").post(delete_user_route))
+            .service(web::resource("/profile/delete/").post(delete_user_route))
             // .service(web::resource("/api/modify/user/").post(modify_user_route))
             // // src/entities/tanks
             // .service(web::resource("/api/create/tank/").post(create_tank_route))
