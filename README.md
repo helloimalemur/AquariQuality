@@ -4,6 +4,12 @@
 
 ## Intended on being some sort of Aquarium water quality and progress tracking web application
 
+## Development and Collaboration
+#### Feel free to open a pull request, please run the following prior to your submission please!
+    echo "Run clippy"; cargo clippy -- -D clippy::all
+    echo "Format source code"; cargo fmt -- --check
+
+
 # deps
 ```shell
 pacman -S xdo xdotool base-devel
