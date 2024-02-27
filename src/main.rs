@@ -3,7 +3,6 @@
 mod api_keys;
 mod entities;
 mod frontend;
-mod middleware;
 
 use crate::api_keys::{create_api_key, delete_api_key, is_key_valid, load_keys_from_file};
 use crate::entities::parameter::{
@@ -13,7 +12,6 @@ use crate::entities::session::{login_user_route, logout_user_route, verify_sessi
 use crate::entities::tank::{create_tank_route, delete_tank_route, modify_tank_route};
 use crate::entities::user::{create_user_route, delete_user_route, modify_user_route};
 use crate::frontend::start_front_end;
-use crate::middleware::api_key;
 use actix_files::NamedFile;
 use actix_web::dev::Service;
 use actix_web::http::{Method, StatusCode};

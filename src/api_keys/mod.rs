@@ -1,4 +1,3 @@
-use crate::middleware::api_key::ApiKey;
 use crate::AppState;
 use actix_web::dev::Payload;
 use actix_web::web::{BytesMut, Data};
