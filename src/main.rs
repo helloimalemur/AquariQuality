@@ -128,7 +128,7 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .wrap(cors)
             .app_data(state.clone())
-            .wrap(api_key::ApiKey::new("".to_string()))
+            // .wrap(api_key::ApiKey::new("".to_string()))
             // login/logout
             .service(web::resource("/login").post(login_user_route))
             .service(web::resource("/login/").post(login_user_route))
