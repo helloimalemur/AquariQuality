@@ -43,6 +43,15 @@ mariadb -h "$DOCKER_MARIADB_DBHOST" -uroot -p"$DOCKER_MARIADB_DBHOSTPW" -e 'CREA
 mariadb -h "$DOCKER_MARIADB_DBHOST" -uroot -p"$DOCKER_MARIADB_DBHOSTPW" -e 'CREATE TABLE `session` (`userid` INT NOT NULL,`name` VARCHAR(255) NOT NULL,`email` VARCHAR(255) NOT NULL,`sessionid` VARCHAR(255) NOT NULL,PRIMARY KEY (`sessionid`)) ENGINE=InnoDB;' aquariquality;
 mariadb -h "$DOCKER_MARIADB_DBHOST" -uroot -p"$DOCKER_MARIADB_DBHOSTPW" -e 'SHOW TABLES;' aquariquality;
 ```
+## Backend API endpoints
+    curl -XPOST -H'X-API-KEY: 12790066417744034365' localhost:8723/api/create/
+    curl -XPOST -H'X-API-KEY: 12790066417744034365' localhost:8723/api/delete/ -d'{"api_key":"9860738100897034443"}'
+    curl -XPOST -H'X-API-KEY: omganotherone' localhost:8723/api/create/parameter/ -d '{ "session_id": "String", "user_id": 4412, "ph": 0.0, "kh": 0.0, "ammmonia": 0.0, "nitrite": 0.0, "nitrate": 0.0}'
+    curl -XPOST -H'X-API-KEY: omganotherone' localhost:8723/login/ -d '{"email":"johhny@mail.com","password":"password"}'
+    curl -XPOST -H'X-API-KEY: omganotherone' localhost:8723/logout/ -d '{"session_id":"password"}'
+    curl -XPOST -H'X-API-KEY: omganotherone' localhost:8723/verify/ -d '"session_id":"sessionid"}'
+    curl -XPOST -H'X-API-KEY: omganotherone' localhost:8723/user/create/ -d '{"name":"johnny","email":"johhny@mail.com","password":"password"}'
+    curl -XPOST -H'X-API-KEY: 12790066417744034365' localhost:8723/api/delete/user/ -d '{"name":"johnny","email":"johhny@mail.com"}'
 
 ## Project scheme
 ```sql
