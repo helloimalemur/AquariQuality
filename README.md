@@ -15,6 +15,7 @@
 pacman -S xdo xdotool base-devel
 ```
 
+## Start your own Docker development mariadb instance
 ```shell
 ## Bring your own SQL server;
 export DOCKER_MARIADB_DBHOST="127.0.0.1";
@@ -43,6 +44,7 @@ mariadb -h "$DOCKER_MARIADB_DBHOST" -uroot -p"$DOCKER_MARIADB_DBHOSTPW" -e 'CREA
 mariadb -h "$DOCKER_MARIADB_DBHOST" -uroot -p"$DOCKER_MARIADB_DBHOSTPW" -e 'SHOW TABLES;' aquariquality;
 ```
 
+## Project scheme
 ```sql
 CREATE DATABASE aquariquality;
 USE aquariquality;
