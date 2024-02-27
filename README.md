@@ -1,5 +1,9 @@
 # AquariQuality
 
+## Work in Progress
+
+## Intended on being some sort of Aquarium water quality and progress tracking web application
+
 # deps
 ```shell
 pacman -S xdo xdotool base-devel
