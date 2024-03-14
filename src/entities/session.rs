@@ -354,7 +354,7 @@ pub async fn check_if_session_exists(session_id: SessionId, data: Data<Mutex<App
             }
         } else {
             false
-        };
+        }
     } else {
         false
     }
